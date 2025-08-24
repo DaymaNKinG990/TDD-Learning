@@ -1,0 +1,117 @@
+site_name: Полный курс по TDD на Python
+site_description: Детальный курс по Test-Driven Development с примерами на Python
+site_author: AI Assistant
+site_url: https://your-username.github.io/TDD-Learning
+
+# Указываем папку с файлами документации
+docs_dir: docs
+
+repo_name: TDD-Learning
+repo_url: https://github.com/your-username/TDD-Learning
+edit_uri: edit/main/
+
+theme:
+  name: material
+  language: ru
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - toc.follow
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+plugins:
+  - search:
+      lang: ru
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      title: Содержание
+  - tables
+  - footnotes
+
+nav:
+  - Главная: index.md
+  - Основы TDD:
+    - Введение в TDD: 00_introduction.md
+    - Основы TDD: 01_tdd_basics.md
+    - Настройка окружения: 02_environment_setup.md
+    - Цикл Red-Green-Refactor: 03_red_green_refactor.md
+  - Тестирование в Python:
+    - Основы тестирования: 04_python_testing_basics.md
+    - Unittest модуль: 05_unittest.md
+    - Pytest фреймворк: 06_pytest.md
+  - Практика TDD:
+    - Практические примеры: 07_practical_examples.md
+    - Mock объекты: 08_mocking.md
+    - Интеграционное тестирование: 09_integration_testing.md
+  - Реальные проекты:
+    - TDD в веб-разработке: 10_web_development_tdd.md
+    - Продвинутые техники: 11_advanced_tdd.md
+  - Рекомендации:
+    - Лучшие практики: 12_best_practices.md
+    - Инструменты и фреймворки: 13_tools_frameworks.md
+    - Заключение и ресурсы: 14_conclusion.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-username/TDD-Learning
+  
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+
+extra_css:
+  - stylesheets/extra.css
+
+copyright: Copyright &copy; 2024 TDD Python Course

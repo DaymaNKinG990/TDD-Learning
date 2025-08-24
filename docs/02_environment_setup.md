@@ -51,9 +51,6 @@ sudo apt install python3 python3-pip python3-venv
 ```bash
 # Установка uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Или через pip (если uv недоступен)
-pip install uv
 ```
 
 ### Создание проекта
@@ -73,10 +70,8 @@ uv add pytest-xdist      # Параллельные тесты
 uv add pytest-benchmark  # Тесты производительности
 
 # Дополнительные инструменты
-uv add black             # Форматирование кода
-uv add isort             # Сортировка импортов
 uv add mypy              # Статическая типизация
-uv add flake8            # Линтер
+uv add ruff              # Линтер + форматтер + сортировка импортов (замена black/isort/flake8)
 ```
 
 ### Структура проекта с uv
@@ -166,35 +161,28 @@ markers = [
 
 ## 🔧 Конфигурация инструментов качества кода
 
-### Black (форматирование)
+### Ruff (линтер + форматтер)
 ```toml
 # pyproject.toml
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-```
+target-version = "py38"
 
-### isort (сортировка импортов)
-```toml
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = ["E501"]  # line too long (handled by formatter)
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 ```
 
 ### mypy (статическая типизация)
@@ -219,21 +207,14 @@ uv add pre-commit --dev
 ```yaml
 # .pre-commit-config.yaml
 repos:
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.8
     hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
+      # Линтер
+      - id: ruff
+        args: [--fix]
+      # Форматтер
+      - id: ruff-format
 
   - repo: local
     hooks:
@@ -268,13 +249,13 @@ uv run pre-commit install
     ],
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
     "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.formatting.provider": "black",
-    "editor.formatOnSave": true,
-    "python.sortImports.args": [
-        "--profile",
-        "black"
-    ]
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "editor.formatOnSave": true
 }
 ```
 
@@ -462,10 +443,10 @@ uv run pytest
 uv run pytest --cov
 
 # 6. Проверка линтера
-uv run flake8 src/ tests/
+uv run ruff check src/ tests/
 
 # 7. Форматирование
-uv run black src/ tests/
+uv run ruff format src/ tests/
 ```
 
 ## 🎯 Следующие шаги

@@ -401,25 +401,41 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Install uv
       uses: astral-sh/setup-uv@v1
       
     - name: Set up Python ${{ matrix.python-version }}
-      run: uv python install ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
       
     - name: Install dependencies
-      run: uv sync
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install pytest pytest-cov ruff mypy
+      
+    - name: Run linting
+      run: |
+        source .venv/bin/activate
+        uv run ruff check .
+        uv run mypy src/ --ignore-missing-imports
       
     - name: Run tests
-      run: uv run pytest --cov --cov-report=xml
+      run: |
+        source .venv/bin/activate
+        uv run pytest --cov=src --cov-report=xml --cov-report=term
       
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
 ```
 
 ## ✅ Проверка настройки

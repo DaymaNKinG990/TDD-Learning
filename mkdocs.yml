@@ -48,6 +48,11 @@ theme:
     edit: material/pencil
     view: material/eye
 
+  favicon: assets/favicon.ico
+
+  # Дополнительные мета-теги для favicon
+  custom_dir: docs
+
 plugins:
   - search:
       lang: ru
@@ -78,6 +83,12 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        attributes:
+          align: absmiddle
+          class: emoji
+        classes:
+          emoji: emoji
   - attr_list
   - md_in_html
   - toc:

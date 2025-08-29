@@ -64,7 +64,7 @@ import uuid
 class Task:
     '''Модель задачи для TODO API'''
 
-    def __init__(self, title: str, description: str = "", status: str = "pending"):
+    def __init__(self, title: str, description: str = "", status: str = 'pending'):
         self.id = str(uuid.uuid4())
         self.title = title
         self.description = description
@@ -86,24 +86,24 @@ class Task:
     def to_dict(self) -> dict:
         '''Преобразование в словарь для JSON'''
         return {
-            "id": self.id,
-            "title": self.title,
-            "description": self.description,
-            "status": self.status,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'status': self.status,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Task':
         '''Создание задачи из словаря'''
         task = cls(
-            title=data["title"],
-            description=data.get("description", ""),
-            status=data.get("status", "pending")
+            title=data['title'],
+            description=data.get('description', ''),
+            status=data.get('status', 'pending')
         )
-        if "id" in data:
-            task.id = data["id"]
+        if 'id' in data:
+            task.id = data['id']
         return task""",
     [
         "Добавьте все необходимые поля для задачи",
@@ -237,64 +237,64 @@ class TaskService:
         '''Создать новую задачу'''
         # Валидация
         if not title or not title.strip():
-            return {"error": "Title is required", "status_code": 400}
+            return {'error': 'Title is required', 'status_code': 400}
 
         if len(title) > 100:
-            return {"error": "Title too long (max 100 characters)", "status_code": 400}
+            return {'error': 'Title too long (max 100 characters)', 'status_code': 400}
 
         # Создание задачи
         task = Task(title.strip(), description.strip())
         saved_task = self.repository.save(task)
 
-        return {"task": saved_task.to_dict(), "status_code": 201}
+        return {'task': saved_task.to_dict(), 'status_code': 201}
 
     def get_task(self, task_id: str) -> Dict[str, Any]:
         '''Получить задачу по ID'''
         task = self.repository.find_by_id(task_id)
         if not task:
-            return {"error": "Task not found", "status_code": 404}
+            return {'error': 'Task not found', 'status_code': 404}
 
-        return {"task": task.to_dict(), "status_code": 200}
+        return {'task': task.to_dict(), 'status_code': 200}
 
     def get_all_tasks(self, status: Optional[str] = None) -> Dict[str, Any]:
         '''Получить все задачи'''
-        if status and status not in ["pending", "in_progress", "completed"]:
-            return {"error": "Invalid status filter", "status_code": 400}
+        if status and status not in ['pending', 'in_progress', 'completed']:
+            return {'error': 'Invalid status filter', 'status_code': 400}
 
         tasks = self.repository.find_all(status)
-        return {"tasks": [task.to_dict() for task in tasks], "status_code": 200}
+        return {'tasks': [task.to_dict() for task in tasks], 'status_code': 200}
 
     def update_task(self, task_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
         '''Обновить задачу'''
         # Проверяем существование задачи
         existing_task = self.repository.find_by_id(task_id)
         if not existing_task:
-            return {"error": "Task not found", "status_code": 404}
+            return {'error': 'Task not found', 'status_code': 404}
 
         # Валидация обновлений
-        if "title" in updates and (not updates["title"] or not updates["title"].strip()):
-            return {"error": "Title cannot be empty", "status_code": 400}
+        if 'title' in updates and (not updates['title'] or not updates['title'].strip()):
+            return {'error': 'Title cannot be empty', 'status_code': 400}
 
-        if "status" in updates and updates["status"] not in ["pending", "in_progress", "completed"]:
-            return {"error": "Invalid status", "status_code": 400}
+        if 'status' in updates and updates['status'] not in ['pending', 'in_progress', 'completed']:
+            return {'error': 'Invalid status', 'status_code': 400}
 
         # Обновление
         updated_task = self.repository.update(task_id, updates)
-        return {"task": updated_task.to_dict(), "status_code": 200}
+        return {'task': updated_task.to_dict(), 'status_code': 200}
 
     def delete_task(self, task_id: str) -> Dict[str, Any]:
         '''Удалить задачу'''
         # Проверяем существование задачи
         existing_task = self.repository.find_by_id(task_id)
         if not existing_task:
-            return {"error": "Task not found", "status_code": 404}
+            return {'error': 'Task not found', 'status_code': 404}
 
         # Удаление
         success = self.repository.delete(task_id)
         if success:
-            return {"message": "Task deleted successfully", "status_code": 200}
+            return {'message': 'Task deleted successfully', 'status_code': 200}
         else:
-            return {"error": "Failed to delete task", "status_code": 500}""",
+            return {'error': 'Failed to delete task', 'status_code': 500}""",
     [
         "Добавьте все методы CRUD с бизнес-логикой",
         "Реализуйте валидацию входных данных",
@@ -333,38 +333,38 @@ def create_api_blueprint(repository=None) -> Blueprint:
         status = request.args.get('status')
         result = service.get_all_tasks(status)
 
-        if result["status_code"] == 400:
-            return jsonify({"error": result["error"]}), 400
+        if result['status_code'] == 400:
+            return jsonify({'error': result['error']}), 400
 
-        return jsonify(result["tasks"]), 200
+        return jsonify(result['tasks']), 200
 
     @api_bp.route('/tasks', methods=['POST'])
     def create_task():
         '''Создать новую задачу'''
         data = request.get_json()
 
-        if not data or "title" not in data:
-            return jsonify({"error": "Title is required"}), 400
+        if not data or 'title' not in data:
+            return jsonify({'error': 'Title is required'}), 400
 
         result = service.create_task(
-            title=data["title"],
-            description=data.get("description", "")
+            title=data['title'],
+            description=data.get('description', '')
         )
 
-        if result["status_code"] == 400:
-            return jsonify({"error": result["error"]}), 400
+        if result['status_code'] == 400:
+            return jsonify({'error': result['error']}), 400
 
-        return jsonify(result["task"]), 201
+        return jsonify(result['task']), 201
 
     @api_bp.route('/tasks/<task_id>', methods=['GET'])
     def get_task(task_id):
         '''Получить задачу по ID'''
         result = service.get_task(task_id)
 
-        if result["status_code"] == 404:
-            return jsonify({"error": result["error"]}), 404
+        if result['status_code'] == 404:
+            return jsonify({'error': result['error']}), 404
 
-        return jsonify(result["task"]), 200
+        return jsonify(result['task']), 200
 
     @api_bp.route('/tasks/<task_id>', methods=['PUT'])
     def update_task(task_id):
@@ -372,26 +372,26 @@ def create_api_blueprint(repository=None) -> Blueprint:
         data = request.get_json()
 
         if not data:
-            return jsonify({"error": "No data provided"}), 400
+            return jsonify({'error': 'No data provided'}), 400
 
         result = service.update_task(task_id, data)
 
-        if result["status_code"] == 404:
-            return jsonify({"error": result["error"]}), 404
-        elif result["status_code"] == 400:
-            return jsonify({"error": result["error"]}), 400
+        if result['status_code'] == 404:
+            return jsonify({'error': result['error']}), 404
+        elif result['status_code'] == 400:
+            return jsonify({'error': result['error']}), 400
 
-        return jsonify(result["task"]), 200
+        return jsonify(result['task']), 200
 
     @api_bp.route('/tasks/<task_id>', methods=['DELETE'])
     def delete_task(task_id):
         '''Удалить задачу'''
         result = service.delete_task(task_id)
 
-        if result["status_code"] == 404:
-            return jsonify({"error": result["error"]}), 404
+        if result['status_code'] == 404:
+            return jsonify({'error': result['error']}), 404
 
-        return jsonify({"message": result["message"]}), 200
+        return jsonify({'message': result['message']}), 200
 
     return api_bp""",
     [
@@ -473,8 +473,8 @@ def repository():
 def test_create_task_api(client):
     '''Тест создания задачи через API'''
     task_data = {
-        "title": "Test Task",
-        "description": "Test Description"
+        'title': 'Test Task',
+        'description': 'Test Description'
     }
 
     response = client.post(
@@ -486,22 +486,22 @@ def test_create_task_api(client):
     assert response.status_code == 201
     response_data = json.loads(response.data)
 
-    assert response_data["title"] == "Test Task"
-    assert response_data["description"] == "Test Description"
-    assert response_data["status"] == "pending"
-    assert "id" in response_data
+    assert response_data['title'] == 'Test Task'
+    assert response_data['description'] == 'Test Description'
+    assert response_data['status'] == 'pending'
+    assert 'id' in response_data
 
 def test_get_task_api(client):
     '''Тест получения задачи по ID'''
     # Сначала создаем задачу
-    task_data = {"title": "Test Task"}
+    task_data = {'title': 'Test Task'}
     create_response = client.post(
         '/api/tasks',
         data=json.dumps(task_data),
         content_type='application/json'
     )
 
-    task_id = json.loads(create_response.data)["id"]
+    task_id = json.loads(create_response.data)['id']
 
     # Получаем задачу
     response = client.get(f'/api/tasks/{task_id}')
@@ -509,25 +509,25 @@ def test_get_task_api(client):
     assert response.status_code == 200
     response_data = json.loads(response.data)
 
-    assert response_data["id"] == task_id
-    assert response_data["title"] == "Test Task"
+    assert response_data['id'] == task_id
+    assert response_data['title'] == 'Test Task'
 
 def test_update_task_api(client):
     '''Тест обновления задачи'''
     # Создаем задачу
-    task_data = {"title": "Original Title"}
+    task_data = {'title': 'Original Title'}
     create_response = client.post(
         '/api/tasks',
         data=json.dumps(task_data),
         content_type='application/json'
     )
 
-    task_id = json.loads(create_response.data)["id"]
+    task_id = json.loads(create_response.data)['id']
 
     # Обновляем задачу
     update_data = {
-        "title": "Updated Title",
-        "status": "completed"
+        'title': 'Updated Title',
+        'status': 'completed'
     }
 
     response = client.put(
@@ -539,20 +539,20 @@ def test_update_task_api(client):
     assert response.status_code == 200
     response_data = json.loads(response.data)
 
-    assert response_data["title"] == "Updated Title"
-    assert response_data["status"] == "completed"
+    assert response_data['title'] == 'Updated Title'
+    assert response_data['status'] == 'completed'
 
 def test_delete_task_api(client):
     '''Тест удаления задачи'''
     # Создаем задачу
-    task_data = {"title": "Task to Delete"}
+    task_data = {'title': 'Task to Delete'}
     create_response = client.post(
         '/api/tasks',
         data=json.dumps(task_data),
         content_type='application/json'
     )
 
-    task_id = json.loads(create_response.data)["id"]
+    task_id = json.loads(create_response.data)['id']
 
     # Удаляем задачу
     response = client.delete(f'/api/tasks/{task_id}')
@@ -567,9 +567,9 @@ def test_get_all_tasks_api(client):
     '''Тест получения всех задач'''
     # Создаем несколько задач
     tasks_data = [
-        {"title": "Task 1", "status": "pending"},
-        {"title": "Task 2", "status": "completed"},
-        {"title": "Task 3", "status": "in_progress"}
+        {'title': 'Task 1', 'status': 'pending'},
+        {'title': 'Task 2', 'status': 'completed'},
+        {'title': 'Task 3', 'status': 'in_progress'}
     ]
 
     for task_data in tasks_data:
@@ -590,9 +590,9 @@ def test_filter_tasks_by_status_api(client):
     '''Тест фильтрации задач по статусу'''
     # Создаем задачи с разными статусами
     tasks_data = [
-        {"title": "Pending Task", "status": "pending"},
-        {"title": "Completed Task", "status": "completed"},
-        {"title": "In Progress Task", "status": "in_progress"}
+        {'title': 'Pending Task', 'status': 'pending'},
+        {'title': 'Completed Task', 'status': 'completed'},
+        {'title': 'In Progress Task', 'status': 'in_progress'}
     ]
 
     for task_data in tasks_data:
@@ -608,8 +608,8 @@ def test_filter_tasks_by_status_api(client):
 
     response_data = json.loads(response.data)
     assert len(response_data) == 1
-    assert response_data[0]["title"] == "Completed Task"
-    assert response_data[0]["status"] == "completed" """,
+    assert response_data[0]['title'] == 'Completed Task'
+    assert response_data[0]['status'] == 'completed' """,
     [
         "Создайте тесты для всех CRUD операций",
         "Добавьте тесты для фильтрации",
@@ -640,14 +640,14 @@ class TaskValidator:
     def validate_title(title: str) -> str:
         '''Валидация заголовка задачи'''
         if not title or not isinstance(title, str):
-            raise ValidationError("Title is required and must be a string")
+            raise ValidationError('Title is required and must be a string')
 
         title = title.strip()
         if not title:
-            raise ValidationError("Title cannot be empty")
+            raise ValidationError('Title cannot be empty')
 
         if len(title) > 100:
-            raise ValidationError("Title too long (max 100 characters)")
+            raise ValidationError('Title too long (max 100 characters)')
 
         return title
 
@@ -658,23 +658,23 @@ class TaskValidator:
             return ""
 
         if not isinstance(description, str):
-            raise ValidationError("Description must be a string")
+            raise ValidationError('Description must be a string')
 
         if len(description) > 500:
-            raise ValidationError("Description too long (max 500 characters)")
+            raise ValidationError('Description too long (max 500 characters)')
 
         return description.strip()
 
     @staticmethod
     def validate_status(status: Optional[str]) -> str:
         '''Валидация статуса задачи'''
-        valid_statuses = ["pending", "in_progress", "completed"]
+        valid_statuses = ['pending', 'in_progress', 'completed']
 
         if status is None:
-            return "pending"
+            return 'pending'
 
         if status not in valid_statuses:
-            raise ValidationError(f"Invalid status. Must be one of: {valid_statuses}")
+            raise ValidationError(f'Invalid status. Must be one of: {valid_statuses}')
 
         return status
 
@@ -682,19 +682,19 @@ class TaskValidator:
     def validate_task_data(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         '''Валидация полных данных задачи'''
         if not isinstance(data, dict):
-            raise ValidationError("Data must be a dictionary")
+            raise ValidationError('Data must be a dictionary')
 
         validated_data = {}
 
         # Обязательные поля
-        if "title" not in data:
-            raise ValidationError("Title is required")
+        if 'title' not in data:
+            raise ValidationError('Title is required')
 
-        validated_data["title"] = cls.validate_title(data["title"])
+        validated_data['title'] = cls.validate_title(data['title'])
 
         # Опциональные поля
-        validated_data["description"] = cls.validate_description(data.get("description"))
-        validated_data["status"] = cls.validate_status(data.get("status"))
+        validated_data['description'] = cls.validate_description(data.get('description'))
+        validated_data['status'] = cls.validate_status(data.get('status'))
 
         return validated_data""",
     [
@@ -724,40 +724,40 @@ def register_error_handlers(app: Flask):
     def handle_validation_error(error):
         '''Обработка ошибок валидации'''
         return jsonify({
-            "error": "Validation Error",
-            "message": str(error)
+            'error': 'Validation Error',
+            'message': str(error)
         }), 400
 
     @app.errorhandler(404)
     def handle_not_found(error):
         '''Обработка 404 ошибок'''
         return jsonify({
-            "error": "Not Found",
-            "message": "The requested resource was not found"
+            'error': 'Not Found',
+            'message': 'The requested resource was not found'
         }), 404
 
     @app.errorhandler(405)
     def handle_method_not_allowed(error):
         '''Обработка ошибок метода'''
         return jsonify({
-            "error": "Method Not Allowed",
-            "message": "The method is not allowed for this endpoint"
+            'error': 'Method Not Allowed',
+            'message': 'The method is not allowed for this endpoint'
         }), 405
 
     @app.errorhandler(500)
     def handle_internal_error(error):
         '''Обработка внутренних ошибок сервера'''
         return jsonify({
-            "error": "Internal Server Error",
-            "message": "An unexpected error occurred"
+            'error': 'Internal Server Error',
+            'message': 'An unexpected error occurred'
         }), 500
 
     @app.errorhandler(Exception)
     def handle_generic_error(error):
         '''Обработка всех остальных исключений'''
         return jsonify({
-            "error": "Internal Server Error",
-            "message": "An unexpected error occurred"
+            'error': 'Internal Server Error',
+            'message': 'An unexpected error occurred'
         }), 500
 
 # Обновляем создание приложения

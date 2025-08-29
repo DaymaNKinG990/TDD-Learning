@@ -36,7 +36,7 @@
 def test_valid_email_returns_true():
     '''Валидный email должен проходить проверку'''
     validator = StringValidator()  # Класса еще нет!
-    result = validator.is_valid_email("test@example.com")
+    result = validator.is_valid_email('test@example.com')
     assert result is True""",
     [
         "Тест должен создавать экземпляр StringValidator",
@@ -82,7 +82,7 @@ def test_valid_email_returns_true():
     """def test_invalid_email_returns_false():
     '''Невалидный email должен НЕ проходить проверку'''
     validator = StringValidator()
-    result = validator.is_valid_email("invalid_email")
+    result = validator.is_valid_email('invalid_email')
     assert result is False  # Теперь хардкод True не подойдет!""",
     [
         "Тест должен проверять невалидный email без @",
@@ -131,25 +131,25 @@ class StringValidator:
     """def test_password_too_short_returns_false():
     '''Пароль короче 8 символов должен быть невалиден'''
     validator = StringValidator()
-    result = validator.is_valid_password("short")
+    result = validator.is_valid_password('short')
     assert result is False
 
 def test_password_without_letters_returns_false():
     '''Пароль без букв должен быть невалиден'''
     validator = StringValidator()
-    result = validator.is_valid_password("12345678")
+    result = validator.is_valid_password('12345678')
     assert result is False
 
 def test_password_without_digits_returns_false():
     '''Пароль без цифр должен быть невалиден'''
     validator = StringValidator()
-    result = validator.is_valid_password("password")
+    result = validator.is_valid_password('password')
     assert result is False
 
 def test_valid_password_returns_true():
     '''Валидный пароль должен проходить проверку'''
     validator = StringValidator()
-    result = validator.is_valid_password("password123")
+    result = validator.is_valid_password('password123')
     assert result is True""",
     [
         "Тест должен проверять минимальную длину",
@@ -200,19 +200,19 @@ class StringValidator:
     """def test_valid_russian_phone_with_plus_returns_true():
     '''Валидный российский номер с +7 должен проходить проверку'''
     validator = StringValidator()
-    result = validator.is_valid_phone("+71234567890")
+    result = validator.is_valid_phone('+71234567890')
     assert result is True
 
 def test_valid_russian_phone_with_8_returns_true():
     '''Валидный российский номер с 8 должен проходить проверку'''
     validator = StringValidator()
-    result = validator.is_valid_phone("81234567890")
+    result = validator.is_valid_phone('81234567890')
     assert result is True
 
 def test_invalid_phone_returns_false():
     '''Невалидный номер должен не проходить проверку'''
     validator = StringValidator()
-    result = validator.is_valid_phone("1234567890")
+    result = validator.is_valid_phone('1234567890')
     assert result is False
 
 def test_empty_phone_returns_false():

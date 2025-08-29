@@ -30,7 +30,7 @@
         db.save_email_log(to_email, subject, datetime.now())
 
         # ПРОБЛЕМА: Реальное API логирования!
-        logger.log_to_external_service(f"Email sent to {to_email}")""",
+        logger.log_to_external_service(f'Email sent to {to_email}')""",
     [
         "Найдите все внешние зависимости",
         "Опишите риски тестирования этого кода",
@@ -53,10 +53,10 @@
     email_service = EmailService(mock_smtp, mock_db, mock_logger)
 
     # Выполняем операцию
-    email_service.send_notification("test@example.com", "Hello", "Test body")
+    email_service.send_notification('test@example.com', 'Hello', 'Test body')
 
     # Проверяем, что зависимости были вызваны правильно
-    mock_smtp.send_email.assert_called_once_with("test@example.com", "Hello", "Test body")
+    mock_smtp.send_email.assert_called_once_with('test@example.com', 'Hello', 'Test body')
     mock_db.save_email_log.assert_called_once()
     mock_logger.log_info.assert_called_once()""",
     [
@@ -121,24 +121,24 @@ class Logger(ABC):
 class SMTPEmailProvider(EmailProvider):
     def send_email(self, to_email: str, subject: str, body: str) -> bool:
         # В реальности здесь был бы настоящий SMTP
-        print(f"📧 Отправка email на {to_email}: {subject}")
+        print(f'Отправка email на {to_email}: {subject}')
         return True
 
 class DatabaseEmailRepository(DatabaseRepository):
     def save_email_log(self, to_email: str, subject: str, timestamp: datetime) -> None:
         # В реальности здесь была бы настоящая БД
-        print(f"💾 Сохранение в БД: {to_email} - {subject} - {timestamp}")
+        print(f'Сохранение в БД: {to_email} - {subject} - {timestamp}')
 
     def get_user_preferences(self, email: str) -> Dict:
         # Симуляция получения настроек пользователя
-        return {"language": "ru", "notifications": True}
+        return {'language': 'ru', 'notifications': True}
 
 class FileLogger(Logger):
     def log_info(self, message: str) -> None:
-        print(f"ℹ️ INFO: {message}")
+        print(f'INFO: {message}')
 
     def log_error(self, message: str) -> None:
-        print(f"❌ ERROR: {message}")""",
+        print(f'ERROR: {message}')""",
     [
         "Реализуйте SMTPEmailProvider с методом send_email",
         "Реализуйте DatabaseEmailRepository с методами save_email_log и get_user_preferences",
@@ -169,13 +169,13 @@ class EmailService:
     def send_notification(self, to_email: str, subject: str, body: str) -> bool:
         \"\"\"Отправка уведомления с логированием\"\"\"
         try:
-            self.logger.log_info(f"Попытка отправки email на {to_email}")
+            self.logger.log_info(f'Попытка отправки email на {to_email}')
 
             # Получаем настройки пользователя
             user_prefs = self.database.get_user_preferences(to_email)
 
-            if not user_prefs.get("notifications", True):
-                self.logger.log_info(f"Пользователь {to_email} отключил уведомления")
+            if not user_prefs.get('notifications', True):
+                self.logger.log_info(f'Пользователь {to_email} отключил уведомления')
                 return False
 
             # Отправляем email
@@ -184,14 +184,14 @@ class EmailService:
             if success:
                 # Сохраняем лог в БД
                 self.database.save_email_log(to_email, subject, datetime.now())
-                self.logger.log_info(f"Email успешно отправлен на {to_email}")
+                self.logger.log_info(f'Email успешно отправлен на {to_email}')
                 return True
             else:
-                self.logger.log_error(f"Не удалось отправить email на {to_email}")
+                self.logger.log_error(f'Не удалось отправить email на {to_email}')
                 return False
 
         except Exception as e:
-            self.logger.log_error(f"Ошибка при отправке email на {to_email}: {str(e)}")
+            self.logger.log_error(f'Ошибка при отправке email на {to_email}: {str(e)}')
             return False
 
     def send_bulk_notifications(self, recipients: List[str], subject: str, body: str) -> Dict[str, bool]:
@@ -202,7 +202,7 @@ class EmailService:
             results[email] = self.send_notification(email, subject, body)
 
         successful = sum(1 for success in results.values() if success)
-        self.logger.log_info(f"Массовая рассылка завершена. Успешно: {successful}/{len(recipients)}")
+        self.logger.log_info(f'Массовая рассылка завершена. Успешно: {successful}/{len(recipients)}')
 
         return results""",
     [
@@ -234,21 +234,21 @@ def test_send_notification_success():
     mock_logger = Mock(spec=Logger)
 
     # Настраиваем поведение моков
-    mock_database.get_user_preferences.return_value = {"notifications": True}
+    mock_database.get_user_preferences.return_value = {'notifications': True}
     mock_email_provider.send_email.return_value = True
 
     # Создаем сервис с моками
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Выполняем операцию
-    result = email_service.send_notification("test@example.com", "Hello", "Test body")
+    result = email_service.send_notification('test@example.com', 'Hello', 'Test body')
 
     # Проверяем результат
     assert result is True
 
     # Проверяем вызовы моков
-    mock_database.get_user_preferences.assert_called_once_with("test@example.com")
-    mock_email_provider.send_email.assert_called_once_with("test@example.com", "Hello", "Test body")
+    mock_database.get_user_preferences.assert_called_once_with('test@example.com')
+    mock_email_provider.send_email.assert_called_once_with('test@example.com', 'Hello', 'Test body')
     mock_database.save_email_log.assert_called_once()
     mock_logger.log_info.assert_called()""",
     [
@@ -273,13 +273,13 @@ def test_send_notification_success():
     mock_logger = Mock(spec=Logger)
 
     # Пользователь отключил уведомления
-    mock_database.get_user_preferences.return_value = {"notifications": False}
+    mock_database.get_user_preferences.return_value = {'notifications': False}
 
     # Создаем сервис с моками
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Выполняем операцию
-    result = email_service.send_notification("test@example.com", "Hello", "Test body")
+    result = email_service.send_notification('test@example.com', 'Hello', 'Test body')
 
     # Проверяем результат
     assert result is False
@@ -289,7 +289,7 @@ def test_send_notification_success():
     mock_database.save_email_log.assert_not_called()
 
     # Проверяем логирование отключения
-    mock_logger.log_info.assert_called_with("Пользователь test@example.com отключил уведомления")""",
+    mock_logger.log_info.assert_called_with('Пользователь test@example.com отключил уведомления')""",
     [
         "Настройте мок БД для возврата отключенных уведомлений",
         "Проверьте что результат равен False",
@@ -312,7 +312,7 @@ def test_send_notification_success():
     mock_logger = Mock(spec=Logger)
 
     # Настраиваем успешное получение настроек
-    mock_database.get_user_preferences.return_value = {"notifications": True}
+    mock_database.get_user_preferences.return_value = {'notifications': True}
     # Но провайдер возвращает ошибку
     mock_email_provider.send_email.return_value = False
 
@@ -320,7 +320,7 @@ def test_send_notification_success():
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Выполняем операцию
-    result = email_service.send_notification("test@example.com", "Hello", "Test body")
+    result = email_service.send_notification('test@example.com', 'Hello', 'Test body')
 
     # Проверяем результат
     assert result is False
@@ -329,7 +329,7 @@ def test_send_notification_success():
     mock_database.save_email_log.assert_not_called()
 
     # Проверяем логирование ошибки
-    mock_logger.log_error.assert_called_with("Не удалось отправить email на test@example.com")""",
+    mock_logger.log_error.assert_called_with('Не удалось отправить email на test@example.com')""",
     [
         "Настройте провайдер для возврата False",
         "Проверьте что результат равен False",
@@ -352,13 +352,13 @@ def test_send_notification_success():
     mock_logger = Mock(spec=Logger)
 
     # БД выбрасывает исключение
-    mock_database.get_user_preferences.side_effect = Exception("Database connection failed")
+    mock_database.get_user_preferences.side_effect = Exception('Database connection failed')
 
     # Создаем сервис с моками
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Выполняем операцию
-    result = email_service.send_notification("test@example.com", "Hello", "Test body")
+    result = email_service.send_notification('test@example.com', 'Hello', 'Test body')
 
     # Проверяем результат
     assert result is False
@@ -367,7 +367,7 @@ def test_send_notification_success():
     mock_email_provider.send_email.assert_not_called()
 
     # Проверяем логирование ошибки
-    mock_logger.log_error.assert_called_with("Ошибка при отправке email на test@example.com: Database connection failed")""",
+    mock_logger.log_error.assert_called_with('Ошибка при отправке email на test@example.com: Database connection failed')""",
     [
         "Настройте мок БД для выбрасывания исключения",
         "Проверьте корректную обработку исключения",
@@ -393,9 +393,9 @@ def test_send_notification_success():
 
     # Разные пользователи имеют разные настройки
     mock_database.get_user_preferences.side_effect = [
-        {"notifications": True},   # Первый пользователь
-        {"notifications": False},  # Второй отключил уведомления
-        {"notifications": True},   # Третий пользователь
+        {'notifications': True},   # Первый пользователь
+        {'notifications': False},  # Второй отключил уведомления
+        {'notifications': True},   # Третий пользователь
     ]
 
     # Провайдер возвращает разные результаты
@@ -405,18 +405,18 @@ def test_send_notification_success():
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Выполняем массовую рассылку
-    recipients = ["user1@test.com", "user2@test.com", "user3@test.com"]
-    results = email_service.send_bulk_notifications(recipients, "Bulk message", "Test body")
+    recipients = ['user1@test.com', 'user2@test.com', 'user3@test.com']
+    results = email_service.send_bulk_notifications(recipients, 'Bulk message', 'Test body')
 
     # Проверяем результаты
-    assert results["user1@test.com"] is True   # Отправлено успешно
-    assert results["user2@test.com"] is False  # Отключены уведомления
-    assert results["user3@test.com"] is False  # Ошибка отправки
+    assert results['user1@test.com'] is True   # Отправлено успешно
+    assert results['user2@test.com'] is False  # Отключены уведомления
+    assert results['user3@test.com'] is False  # Ошибка отправки
 
     # Проверяем статистику
     assert mock_logger.log_info.called
     log_calls = [call for call in mock_logger.log_info.call_args_list
-                 if "Массовая рассылка завершена" in str(call)]
+                 if 'Массовая рассылка завершена' in str(call)]
     assert len(log_calls) == 1""",
     [
         "Настройте side_effect для разных пользователей",
@@ -434,12 +434,12 @@ def test_send_notification_success():
     "Напишите тест с использованием side_effect в виде функции для сложной логики.",
     """def dynamic_email_validator(to_email, subject, body):
     '''Динамическая функция валидации email'''
-    if "@invalid.com" in to_email:
+    if '@invalid.com' in to_email:
         return False
     elif len(subject) > 50:
-        raise Exception("Subject too long")
+        raise Exception('Subject too long')
     elif not body.strip():
-        raise Exception("Body is empty")
+        raise Exception('Body is empty')
     else:
         return True
 
@@ -454,16 +454,16 @@ def test_email_validation_with_complex_logic():
     mock_email_provider.send_email.side_effect = dynamic_email_validator
 
     # Настраиваем БД
-    mock_database.get_user_preferences.return_value = {"notifications": True}
+    mock_database.get_user_preferences.return_value = {'notifications': True}
 
     # Создаем сервис
     email_service = EmailService(mock_email_provider, mock_database, mock_logger)
 
     # Тест различных сценариев
     test_cases = [
-        ("valid@test.com", "Valid subject", "Valid body", True),
-        ("user@invalid.com", "Subject", "Body", False),
-        ("valid@test.com", "Very long subject that exceeds the fifty character limit", "Body", False),
+        ('valid@test.com', 'Valid subject', 'Valid body', True),
+        ('user@invalid.com', 'Subject', 'Body', False),
+        ('valid@test.com', 'Very long subject that exceeds the fifty character limit', 'Body', False),
     ]
 
     for email, subject, body, expected in test_cases:

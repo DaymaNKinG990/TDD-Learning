@@ -1,13 +1,13 @@
 site_name: Полный курс по TDD на Python
 site_description: Детальный курс по Test-Driven Development с примерами на Python
 site_author: AI Assistant
-site_url: https://your-username.github.io/TDD-Learning
+site_url: https://tdd-learning.github.io/tdd-learning
 
 # Указываем папку с файлами документации
 docs_dir: docs
 
 repo_name: TDD-Learning
-repo_url: https://github.com/your-username/TDD-Learning
+repo_url: https://github.com/tdd-learning/tdd-learning
 edit_uri: edit/main/
 
 theme:
@@ -51,6 +51,13 @@ theme:
 plugins:
   - search:
       lang: ru
+  - macros:
+      # Включить verbose режим для отладки
+      verbose: false
+      # Остановить сборку при ошибке
+      on_error_fail: false
+      # Поведение при неопределенных переменных
+      on_undefined: keep
 
 markdown_extensions:
   - admonition
@@ -100,18 +107,42 @@ nav:
   - Рекомендации:
     - Лучшие практики: 12_best_practices.md
     - Инструменты и фреймворки: 13_tools_frameworks.md
-    - Заключение и ресурсы: 14_conclusion.md
+    - CI/CD и автоматизация: 14_ci_cd_automation.md
+  - Продвинутые темы:
+    - Тестирование обработки ошибок: 15_error_handling_tdd.md
+    - Метрики покрытия кода: 16_code_coverage_metrics.md
+    - Стратегии работы с Legacy Code: 17_legacy_code_strategies.md
+    - Продвинутое мокирование: 18_advanced_mocking.md
+    - TDD и архитектура приложения: 19_tdd_architecture.md
+    - Заключение и ресурсы: 20_conclusion.md
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-username/TDD-Learning
+      link: https://github.com/tdd-learning/tdd-learning
+  # Переменные для GitHub Actions workflows
+  matrix:
+    python-version: "3.12"
+  secrets:
+    CODECOV_TOKEN: "your_codecov_token_here"
+  # Прямые переменные для доступа в шаблонах
+  python_version_matrix: "3.12"
+  github:
+    event:
+      inputs:
+        environment: "production"
+  runner:
+    os: "ubuntu-latest"
   
-  analytics:
-    provider: google
-    property: G-XXXXXXXXXX
+  # analytics:
+  #   provider: google
+  #   property: G-XXXXXXXXXX  # Замените на ваш реальный Google Analytics ID
 
 extra_css:
   - stylesheets/extra.css
+  - assets/css/quiz.css
+
+extra_javascript:
+  - assets/js/quiz.js
 
 copyright: Copyright &copy; 2024 TDD Python Course

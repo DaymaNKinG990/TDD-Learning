@@ -1,5 +1,5 @@
 """
-Основной модуль с макросами для интерактивных упражнений TDD Learning
+Основной модуль с макросами для интерактивных упражнений Architecture and Patterns
 """
 
 import os
@@ -28,7 +28,7 @@ def define_env(env):
     # Добавить базовые переменные
     env.variables.update(
         {
-            "project_name": "TDD Learning",
+            "project_name": "Architecture and Patterns",
             "project_version": "1.0.0",
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
         }
@@ -50,6 +50,8 @@ def code_input_form(
     exercise_id: str,
     initial_code: str = "",
     placeholder: str = "Введите ваш код здесь...",
+    use_pyodide: bool = True,
+    test_cases: list | None = None,
 ) -> str:
     """
     Создает форму для ввода кода с кнопкой проверки
@@ -58,6 +60,11 @@ def code_input_form(
         exercise_id: Уникальный идентификатор упражнения
         initial_code: Начальный код в форме
         placeholder: Текст плейсхолдера
+        use_pyodide: bool (default True) - когда True, функция выполняется под Pyodide,
+            когда False использует хост-интерпретатор
+        test_cases: list | None (default None) - опциональный список тестовых случаев
+            (входные данные/ожидаемые результаты) для запуска и валидации кода.
+            None означает, что дополнительные тестовые случаи не предоставлены
 
     Returns:
         HTML строка с формой ввода кода
@@ -73,7 +80,34 @@ def code_input_form(
         initial_code.replace('"', "&quot;").replace("\n", "\\n").replace("\r", "")
     )
 
+    # Build test cases JSON
+    import json
+    import html
+
+    test_cases_json = "[]"
+    if test_cases:
+        test_cases_json = json.dumps(test_cases)
+
+    # Escape JSON string for HTML attribute (escape &, <, >, ", ')
+    escaped_test_cases_json = html.escape(test_cases_json, quote=True)
+
+    # Choose execution method
+    onclick_handler = (
+        f"runExerciseWithPyodide('{exercise_id}', {escaped_test_cases_json})"
+        if use_pyodide
+        else f"runExerciseSimple('{exercise_id}')"
+    )
+
+    # Add Pyodide script if needed
+    pyodide_script = ""
+    if use_pyodide:
+        pyodide_script = """
+<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+<script src="/assets/js/pyodide-exercise.js"></script>
+"""
+
     return f"""
+{pyodide_script}
 <div class="code-exercise" id="{exercise_id}">
     <form id="{form_id}" class="code-input-form">
         <div class="form-group">
@@ -89,7 +123,7 @@ def code_input_form(
             >{initial_code}</textarea>
         </div>
         <div class="form-actions">
-            <button type="button" id="{button_id}" class="run-button" onclick="runExerciseCode('{exercise_id}')">
+            <button type="button" id="{button_id}" class="run-button" onclick="{onclick_handler}">
                 🚀 Запустить и проверить
             </button>
             <button type="button" class="reset-button" onclick="resetCode('{exercise_id}')">
@@ -104,28 +138,26 @@ def code_input_form(
 </div>
 
 <script>
-function runExerciseCode(exerciseId) {{
+// Fallback function if Pyodide is not available
+function runExerciseSimple(exerciseId) {{
     const textarea = document.getElementById('code_input_' + exerciseId);
     const output = document.getElementById('output_' + exerciseId);
     const button = document.getElementById('run_button_' + exerciseId);
 
-    // Показать индикатор загрузки
     button.innerHTML = '⏳ Выполняется...';
     button.disabled = true;
 
-    // Для демонстрации - просто симулируем проверку
     setTimeout(() => {{
         const userCode = textarea.value;
         let result;
 
         try {{
-            // Простая проверка на синтаксис
             if (userCode.includes('def ') && userCode.includes('return')) {{
                 result = {{
                     success: true,
-                    tests_passed: 2,
-                    total_tests: 2,
-                    test_details: '<p>✅ Синтаксис корректен</p><p>✅ Функция определена</p>'
+                    tests_passed: 1,
+                    total_tests: 1,
+                    test_details: '<p>✅ Синтаксис корректен</p>'
                 }};
             }} else {{
                 result = {{

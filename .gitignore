@@ -171,3 +171,6 @@ Desktop.ini
 
 # uv
 uv.lock
+
+# ruff
+.ruff_cache/

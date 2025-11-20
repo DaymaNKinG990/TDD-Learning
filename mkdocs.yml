@@ -1,13 +1,13 @@
-site_name: Полный курс по TDD на Python
-site_description: Детальный курс по Test-Driven Development с примерами на Python
+site_name: Мастерство архитектуры и паттернов проектирования
+site_description: Полный курс по SOLID принципам, паттернам проектирования, архитектуре ПО и Domain-Driven Design
 site_author: AI Assistant
-site_url: https://tdd-learning.github.io/tdd-learning
+site_url: https://architecture-and-patterns.github.io/
 
 # Указываем папку с файлами документации
 docs_dir: docs
 
-repo_name: TDD-Learning
-repo_url: https://github.com/tdd-learning/tdd-learning
+repo_name: architecture-and-patterns
+repo_url: https://github.com/architecture-and-patterns/course
 edit_uri: edit/main/
 
 theme:
@@ -57,12 +57,7 @@ plugins:
   - search:
       lang: ru
   - macros:
-      # Включить verbose режим для отладки
-      verbose: false
-      # Остановить сборку при ошибке
-      on_error_fail: false
-      # Поведение при неопределенных переменных
-      on_undefined: keep
+      module_name: main
 
 markdown_extensions:
   - admonition
@@ -99,38 +94,53 @@ markdown_extensions:
 
 nav:
   - Главная: index.md
-  - Основы TDD:
-    - Введение в TDD: 00_introduction.md
-    - Основы TDD: 01_tdd_basics.md
-    - Настройка окружения: 02_environment_setup.md
-    - Цикл Red-Green-Refactor: 03_red_green_refactor.md
-  - Тестирование в Python:
-    - Основы тестирования: 04_python_testing_basics.md
-    - Unittest модуль: 05_unittest.md
-    - Pytest фреймворк: 06_pytest.md
-  - Практика TDD:
-    - Практические примеры: 07_practical_examples.md
-    - Mock объекты: 08_mocking.md
-    - Интеграционное тестирование: 09_integration_testing.md
-  - Реальные проекты:
-    - TDD в веб-разработке: 10_web_development_tdd.md
-    - Продвинутые техники: 11_advanced_tdd.md
-  - Рекомендации:
-    - Лучшие практики: 12_best_practices.md
-    - Инструменты и фреймворки: 13_tools_frameworks.md
-    - CI/CD и автоматизация: 14_ci_cd_automation.md
-  - Продвинутые темы:
-    - Тестирование обработки ошибок: 15_error_handling_tdd.md
-    - Метрики покрытия кода: 16_code_coverage_metrics.md
-    - Стратегии работы с Legacy Code: 17_legacy_code_strategies.md
-    - Продвинутое мокирование: 18_advanced_mocking.md
-    - TDD и архитектура приложения: 19_tdd_architecture.md
-    - Заключение и ресурсы: 20_conclusion.md
+  - Модуль 1 - SOLID принципы:
+    - Обзор модуля: curriculum/module-01-solid/README.md
+    - Введение в SOLID: curriculum/module-01-solid/01-introduction.md
+    - Single Responsibility: curriculum/module-01-solid/02-single-responsibility.md
+    - Open/Closed Principle: curriculum/module-01-solid/03-open-closed.md
+    - Liskov Substitution: curriculum/module-01-solid/04-liskov-substitution.md
+    - Interface Segregation: curriculum/module-01-solid/05-interface-segregation.md
+    - Dependency Inversion: curriculum/module-01-solid/06-dependency-inversion.md
+    - SOLID на практике: curriculum/module-01-solid/07-solid-in-practice.md
+    - Примеры из реальных библиотек: curriculum/module-01-solid/08-real-world-examples.md
+  - Модуль 2 - Паттерны проектирования:
+    - Обзор модуля: curriculum/module-02-patterns/README.md
+    - Введение в паттерны: curriculum/module-02-patterns/01-patterns-introduction.md
+    - Порождающие паттерны: curriculum/module-02-patterns/02-creational-patterns.md
+    - Структурные паттерны: curriculum/module-02-patterns/03-structural-patterns.md
+    - Поведенческие паттерны 1: curriculum/module-02-patterns/04-behavioral-patterns-1.md
+    - Поведенческие паттерны 2: curriculum/module-02-patterns/05-behavioral-patterns-2.md
+    - Применение паттернов: curriculum/module-02-patterns/06-patterns-application.md
+  - Модуль 3 - Архитектура ПО:
+    - Обзор модуля: curriculum/module-03-architecture/README.md
+    - Обзор архитектур: curriculum/module-03-architecture/01-architecture-overview.md
+    - Монолитная архитектура: curriculum/module-03-architecture/02-monolithic-architecture.md
+    - Микросервисная архитектура: curriculum/module-03-architecture/03-microservices-architecture.md
+    - Событийная архитектура: curriculum/module-03-architecture/04-event-driven-architecture.md
+    - Выбор архитектуры: curriculum/module-03-architecture/05-architecture-selection.md
+  - Модуль 4 - Domain-Driven Design:
+    - Обзор модуля: curriculum/module-04-ddd/README.md
+    - Основы DDD: curriculum/module-04-ddd/01-ddd-fundamentals.md
+    - Стратегическое проектирование: curriculum/module-04-ddd/02-strategic-design.md
+    - Тактическое проектирование: curriculum/module-04-ddd/03-tactical-design.md
+    - Доменные события: curriculum/module-04-ddd/04-domain-events.md
+    - Context Mapping: curriculum/module-04-ddd/05-context-mapping.md
+  - Модуль 5 - Практический проект:
+    - Обзор модуля: curriculum/module-05-project/README.md
+    - Планирование проекта: curriculum/module-05-project/01-project-planning.md
+    - Настройка инфраструктуры: curriculum/module-05-project/02-infrastructure-setup.md
+    - Моделирование домена: curriculum/module-05-project/03-domain-modeling.md
+  - Справочники:
+    - Интерактивные упражнения: INTERACTIVE_EXERCISES_GUIDE.md
+    - Генерация видео-туториалов: VIDEO_TUTORIALS_GUIDE.md
+  - Практические задания: exercises/README.md
+  - 🎉 Заключение курса: conclusion.md
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/tdd-learning/tdd-learning
+      link: https://github.com/architecture-and-patterns/course
   # Переменные для GitHub Actions workflows
   matrix:
     python-version: "3.12"
@@ -155,5 +165,6 @@ extra_css:
 
 extra_javascript:
   - assets/js/quiz.js
+  - assets/js/pyodide-exercise.js
 
-copyright: Copyright &copy; 2024 TDD Python Course
+copyright: Copyright &copy; 2024 Мастерство архитектуры и паттернов проектирования

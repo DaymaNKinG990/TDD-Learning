@@ -8,10 +8,32 @@
 
 ### Стратегии тестирования с БД
 
+#### Setup: SQLAlchemy Models
+
+Все примеры в этом разделе используют следующие определения моделей:
+
+```python
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
+# Create declarative base
+Base = declarative_base()
+
+# User model
+class User(Base):
+    __tablename__ = 'users'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+```
+
 #### 1. In-Memory Database
 
 ```python
+# Note: Base and User are defined in the Setup section above
 # Использование SQLite в памяти для тестов
+import pytest
 import sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -59,6 +81,7 @@ def test_user_repository_with_in_memory_db(in_memory_db):
 #### 2. Test Doubles для ORM
 
 ```python
+# Note: Base and User are defined in the Setup section above
 # Мокирование SQLAlchemy сессии
 def test_user_repository_with_mocked_session(mocker):
     """Тест с замоканной сессией."""
@@ -82,7 +105,9 @@ def test_user_repository_with_mocked_session(mocker):
 #### 3. Repository Pattern для тестируемости
 
 ```python
+# Note: Base and User are defined in the Setup section above
 from abc import ABC, abstractmethod
+from typing import Optional
 
 class UserRepositoryInterface(ABC):
     @abstractmethod
@@ -164,6 +189,7 @@ import pytest
 from testcontainers.postgres import PostgresContainer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+# Note: Base and User are defined in the Setup section above
 
 @pytest.fixture(scope="session")
 def postgres_container():
@@ -200,6 +226,9 @@ def test_user_repository_with_real_postgres(postgres_session):
 #### 5. Database Fixtures и транзакции
 
 ```python
+# Note: Base and User are defined in the Setup section above
+import pytest
+
 @pytest.fixture
 def db_transaction(real_db_session):
     """Фикстура для автоматического rollback после тестов."""
@@ -663,6 +692,8 @@ uv add pyfakefs
 
 ```python
 import pytest
+from pathlib import Path
+from typing import List
 from pyfakefs.fake_filesystem_unittest import Patcher
 
 class LogFileManager:
@@ -873,6 +904,9 @@ def test_age_calculation():
 ```python
 import asyncio
 import time
+import aiohttp
+import pytest
+from unittest.mock import patch, AsyncMock
 
 class RateLimitedService:
     def __init__(self, calls_per_minute: int = 60):
@@ -897,13 +931,11 @@ class AsyncRetryService:
     async def fetch_with_retry(self, url: str, max_retries: int = 3) -> str:
         for attempt in range(max_retries):
             try:
-                # Имитация HTTP запроса
-                await asyncio.sleep(0.1)
-                
-                if attempt < max_retries - 1:  # Падаем на первых попытках
-                    raise aiohttp.ClientError("Network error")
-                
-                return f"Success: {url}"
+                # HTTP запрос через aiohttp
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        response.raise_for_status()
+                        return f"Success: {url}"
                 
             except aiohttp.ClientError:
                 if attempt == max_retries - 1:
@@ -944,18 +976,32 @@ async def test_async_retry_with_time_control():
     
     # Мокируем asyncio.sleep чтобы тесты были быстрыми
     with patch('asyncio.sleep', new_callable=AsyncMock) as mock_sleep:
-        with patch('aiohttp.ClientError', Exception):  # Простая замена для теста
+        # Мокируем HTTP запросы - первые 2 попытки падают, третья успешна
+        call_count = 0
+        
+        async def mock_get(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:  # Первые 2 попытки падают
+                raise aiohttp.ClientError("Network error")
+            # Успешный ответ
+            mock_response = AsyncMock()
+            mock_response.raise_for_status = AsyncMock()
+            return mock_response
+        
+        # Мокируем контекстный менеджер для ClientSession
+        mock_session = AsyncMock()
+        mock_session.get = AsyncMock(side_effect=mock_get)
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=None)
+        
+        # Патчим ClientSession чтобы он возвращал мок с контролируемым поведением get
+        with patch('aiohttp.ClientSession', return_value=mock_session):
+            result = await service.fetch_with_retry("http://example.com")
             
-            # Первые 2 попытки падают, третья успешна
-            with patch.object(service, 'fetch_with_retry', 
-                            wraps=service.fetch_with_retry) as spy:
-                
-                # Мокируем HTTP запросы
-                with patch('aiohttp.ClientSession') as mock_session:
-                    result = await service.fetch_with_retry("http://example.com")
-                    
-                    # Проверяем, что были задержки
-                    assert mock_sleep.call_count >= 2  # Минимум 2 retry
+            # Проверяем, что были задержки
+            assert mock_sleep.call_count >= 2  # Минимум 2 retry
+            assert result == "Success: http://example.com"
 ```
 
 ## 🧪 Сложные сценарии мокирования
@@ -1258,6 +1304,15 @@ def test_math_service_divide_by_zero_property(a):
 </div>
 
 ---
+
+## 🔗 Связанные темы
+
+- **[Mock объекты](08_mocking.md)** - основы мокирования
+- **[Pytest фреймворк](06_pytest.md)** - продвинутые fixtures
+- **[Интеграционное тестирование](09_integration_testing.md)** - моки в интеграционных тестах
+- **[TDD в веб-разработке](10_web_development_tdd.md)** - мокирование в веб-приложениях
+- **[Стратегии работы с Legacy Code](17_legacy_code_strategies.md)** - мокирование legacy кода
+- **[TDD и архитектура](19_tdd_architecture.md)** - мокирование и архитектура
 
 **Следующая глава:** [TDD и архитектура приложения](19_tdd_architecture.md)
 

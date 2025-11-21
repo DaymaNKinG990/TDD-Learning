@@ -2,14 +2,19 @@
 Основной модуль с макросами для интерактивных упражнений TDD Learning
 """
 
+import contextlib
 import os
-import tempfile
+import re
 import subprocess
 import sys
-from typing import Dict, Any
+import tempfile
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from mkdocs_macros.plugin import MacrosPlugin
 
 
-def hashFiles(pattern: str) -> str:
+def hashFiles(_pattern: str) -> str:
     """
     Имитация функции hashFiles из GitHub Actions
     """
@@ -20,9 +25,12 @@ def hashFiles(pattern: str) -> str:
         return "default_hash"
 
 
-def define_env(env):
+def define_env(env: "MacrosPlugin") -> None:
     """
-    Основная функция для определения макросов и переменных
+    Основная функция для определения макросов и переменных.
+
+    Args:
+        env: Объект плагина MkDocs macros для регистрации макросов
     """
 
     # Добавить базовые переменные
@@ -205,7 +213,7 @@ def create_exercise_form(
     title: str,
     description: str,
     initial_code: str = "",
-    test_cases: list | None = None,
+    test_cases: list[str] | None = None,
 ) -> str:
     """
     Создает полную форму упражнения с описанием и тестами
@@ -247,30 +255,82 @@ def create_exercise_form(
 """
 
 
-def exercise_runner(exercise_id: str, user_code: str) -> Dict[str, Any]:
+def _is_code_safe(user_code: str) -> bool:
     """
-    Запускает код пользователя и проверяет на тесты
+    Проверяет код на наличие опасных конструкций.
 
     Args:
-        exercise_id: ID упражнения
+        user_code: Код для проверки
+
+    Returns:
+        True если код безопасен, False иначе
+    """
+    dangerous_patterns = [
+        r"__import__",
+        r"exec\s*\(",
+        r"eval\s*\(",
+        r"compile\s*\(",
+        r"open\s*\(",
+        r"file\s*\(",
+        r"input\s*\(",
+        r"raw_input\s*\(",
+        r"subprocess",
+        r"os\.system",
+        r"os\.popen",
+        r"os\.exec",
+        r"shutil",
+        r"pickle",
+        r"marshal",
+        r"__builtins__",
+        r"__globals__",
+        r"__dict__",
+    ]
+
+    for pattern in dangerous_patterns:
+        if re.search(pattern, user_code, re.IGNORECASE):
+            return False
+    return True
+
+
+def exercise_runner(_exercise_id: str, user_code: str) -> dict[str, Any]:
+    """
+    Запускает код пользователя и проверяет на тесты.
+
+    ⚠️ ВНИМАНИЕ: Эта функция выполняет произвольный код пользователя!
+    Используйте только в изолированной среде (sandbox) или для локальной разработки.
+
+    Args:
+        _exercise_id: ID упражнения (не используется в текущей реализации)
         user_code: Код пользователя
 
     Returns:
         Результаты выполнения
     """
+    # Проверка безопасности кода
+    if not _is_code_safe(user_code):
+        return {
+            "success": False,
+            "error": "Код содержит небезопасные конструкции. Использование системных функций запрещено.",
+        }
+
+    temp_file = None
     try:
         # Создать временный файл с кодом пользователя
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".py", delete=False, dir=tempfile.gettempdir()
+        ) as f:
             f.write(user_code)
             temp_file = f.name
 
-        # Запустить код через subprocess
+        # Запустить код через subprocess с ограничениями
         result = subprocess.run(
-            [sys.executable, temp_file], capture_output=True, text=True, timeout=10
+            [sys.executable, temp_file],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=tempfile.gettempdir(),  # Ограничиваем рабочую директорию
+            env={**os.environ, "PYTHONPATH": ""},  # Очищаем PYTHONPATH
         )
-
-        # Удалить временный файл
-        os.unlink(temp_file)
 
         return {
             "success": result.returncode == 0,
@@ -283,17 +343,22 @@ def exercise_runner(exercise_id: str, user_code: str) -> Dict[str, Any]:
         return {"success": False, "error": "Превышено время выполнения (10 секунд)"}
     except Exception as e:
         return {"success": False, "error": f"Ошибка выполнения: {str(e)}"}
+    finally:
+        # Удалить временный файл
+        if temp_file and os.path.exists(temp_file):
+            with contextlib.suppress(OSError):
+                os.unlink(temp_file)
 
 
 def code_validator(
-    exercise_id: str, user_code: str, expected_tests: list
-) -> Dict[str, Any]:
+    _exercise_id: str, _user_code: str, expected_tests: list[str]
+) -> dict[str, Any]:
     """
     Проверяет код пользователя на соответствие тестам
 
     Args:
-        exercise_id: ID упражнения
-        user_code: Код пользователя
+        _exercise_id: ID упражнения (не используется в текущей реализации)
+        _user_code: Код пользователя (не используется в текущей реализации)
         expected_tests: Список ожидаемых результатов тестов
 
     Returns:
@@ -328,7 +393,7 @@ def run_tests_button(exercise_id: str, button_text: str = "Запустить т
 """
 
 
-def show_test_results(results: Dict[str, Any]) -> str:
+def show_test_results(results: dict[str, Any]) -> str:
     """
     Отображает результаты тестов
 

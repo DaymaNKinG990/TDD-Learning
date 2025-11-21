@@ -407,29 +407,21 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Install uv
-      uses: astral-sh/setup-uv@v1
+      uses: astral-sh/setup-uv@v4
       
-    - name: Set up Python ${{ python_version_matrix }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ python_version_matrix }}
+    - name: Set up Python
+      run: uv python install ${{ matrix.python-version }}
       
     - name: Install dependencies
-      run: |
-        uv venv
-        source .venv/bin/activate
-        uv pip install pytest pytest-cov ruff mypy
+      run: uv sync --extra dev
       
     - name: Run linting
       run: |
-        source .venv/bin/activate
         uv run ruff check .
         uv run mypy src/ --ignore-missing-imports
       
     - name: Run tests
-      run: |
-        source .venv/bin/activate
-        uv run pytest --cov=src --cov-report=xml --cov-report=term
+      run: uv run pytest --cov=src --cov-report=xml --cov-report=term
       
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -437,6 +429,19 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: true
 ```
+
+## ⚠️ Важные замечания
+
+!!! warning "Безопасность выполнения кода"
+    В интерактивных упражнениях используется выполнение пользовательского кода. 
+    В продакшене такие функции должны работать в изолированной среде (sandbox) 
+    с ограничениями доступа к файловой системе и сетевых операций.
+
+!!! tip "Рекомендации"
+    - Используйте виртуальные окружения для изоляции зависимостей
+    - Регулярно обновляйте инструменты (`uv sync`)
+    - Настройте pre-commit хуки для автоматической проверки кода
+    - Используйте CI/CD для проверки кода перед слиянием
 
 ## 🚀 Интерактивная практика
 

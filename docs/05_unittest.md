@@ -41,19 +41,19 @@ if __name__ == '__main__':
 
 ```bash
 # Запуск конкретного файла
-python test_calculator.py
+uv run python test_calculator.py
 
 # Запуск всех тестов в директории
-python -m unittest discover
+uv run python -m unittest discover
 
 # Запуск с подробным выводом
-python -m unittest -v
+uv run python -m unittest -v
 
 # Запуск конкретного класса
-python -m unittest test_calculator.TestCalculator
+uv run python -m unittest test_calculator.TestCalculator
 
 # Запуск конкретного теста
-python -m unittest test_calculator.TestCalculator.test_add_positive_numbers
+uv run python -m unittest test_calculator.TestCalculator.test_add_positive_numbers
 ```
 
 ## 🔧 Методы assertion в unittest
@@ -659,7 +659,7 @@ def test_add(calc):
         {"text": "python -m unittest --class TestClass", "correct": false},
         {"text": "python -m unittest -k TestClass", "correct": false}
       ],
-      "explanation": "Правильный синтаксис: python -m unittest module.TestClass, где module - имя модуля, а TestClass - имя тестового класса.",
+      "explanation": "Правильный синтаксис: uv run python -m unittest module.TestClass, где module - имя модуля, а TestClass - имя тестового класса.",
       "points": 1
     },
     {
@@ -680,6 +680,14 @@ def test_add(calc):
 </div>
 
 ---
+
+## 🔗 Связанные темы
+
+- **[Основы тестирования в Python](04_python_testing_basics.md)** - структура тестов и assertions
+- **[Pytest фреймворк](06_pytest.md)** - современная альтернатива unittest
+- **[Цикл Red-Green-Refactor](03_red_green_refactor.md)** - применение unittest в TDD
+- **[Практические примеры](07_practical_examples.md)** - реальные примеры использования unittest
+- **[Лучшие практики](12_best_practices.md)** - рекомендации по написанию тестов
 
 **Следующая глава:** [Pytest фреймворк](06_pytest.md)
 

@@ -171,3 +171,32 @@ Desktop.ini
 
 # uv
 uv.lock
+.uv/
+
+# MkDocs
+site/
+.mkdocs_cache/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE specific (already covered, but ensuring)
+.idea/
+.vscode/
+*.code-workspace
+
+# Project specific
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

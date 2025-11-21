@@ -1,0 +1,168 @@
+/* Кастомные стили для курса TDD */
+
+/* Улучшение отображения эмодзи в заголовках */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.3;
+}
+
+/* Стили для блоков кода */
+.highlight pre {
+  border-radius: 8px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Улучшение отображения таблиц */
+.md-typeset table:not([class]) {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Стили для заметок и предупреждений */
+.md-typeset .admonition {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Кастомные цвета для разных типов контента */
+.md-typeset .admonition.tip {
+  border-color: #00c853;
+}
+
+.md-typeset .admonition.info {
+  border-color: #2196f3;
+}
+
+.md-typeset .admonition.warning {
+  border-color: #ff9800;
+}
+
+.md-typeset .admonition.danger {
+  border-color: #f44336;
+}
+
+/* Стили для навигационных элементов */
+.md-nav__title {
+  font-weight: 600;
+}
+
+/* Улучшение отображения inline кода */
+.md-typeset code {
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Стили для кнопок */
+.md-button {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.md-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Улучшение читаемости */
+.md-typeset {
+  line-height: 1.7;
+}
+
+.md-typeset h1 {
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid var(--md-primary-fg-color);
+  padding-bottom: 0.5rem;
+}
+
+.md-typeset h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.3rem;
+}
+
+/* Стили для списков TODO */
+.task-list-item {
+  list-style: none;
+}
+
+.task-list-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Анимация для переходов */
+.md-main__inner {
+  transition: all 0.3s ease;
+}
+
+/* Стили для цитат */
+.md-typeset blockquote {
+  border-left: 4px solid var(--md-primary-fg-color);
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: italic;
+  background-color: var(--md-default-bg-color);
+  border-radius: 0 8px 8px 0;
+}
+
+/* Улучшение отображения содержания */
+.md-typeset .toc ul {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.md-typeset .toc ul li::before {
+  content: "→";
+  color: var(--md-primary-fg-color);
+  margin-right: 0.5rem;
+}
+
+/* Стили для выделения важных элементов */
+.highlight-box {
+  background: linear-gradient(135deg, var(--md-primary-fg-color--light), var(--md-primary-fg-color));
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* Мобильная адаптация */
+@media screen and (max-width: 768px) {
+  .md-typeset h1 {
+    font-size: 1.8rem;
+  }
+  
+  .md-typeset h2 {
+    font-size: 1.5rem;
+  }
+  
+  .md-typeset code {
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode специфичные стили */
+[data-md-color-scheme="slate"] {
+  --md-code-bg-color: #2d3748;
+}
+
+[data-md-color-scheme="slate"] .highlight pre {
+  background-color: var(--md-code-bg-color);
+}
+
+/* Стили для progress bar */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  transition: width 0.3s ease;
+}

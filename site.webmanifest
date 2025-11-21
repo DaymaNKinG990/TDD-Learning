@@ -1,0 +1,26 @@
+{
+    "name": "Мастерство архитектуры и паттернов проектирования",
+    "short_name": "Архитектура & Паттерны",
+    "description": "Полный курс по SOLID принципам, паттернам проектирования, архитектуре ПО и Domain-Driven Design",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1e40af",
+    "theme_color": "#3b82f6",
+    "icons": [
+        {
+            "src": "/assets/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/favicon-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        }
+    ]
+}

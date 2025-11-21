@@ -1,253 +1,350 @@
 /**
- * Pyodide-based Python code execution for interactive exercises
- * This allows real Python code execution in the browser
+ * 🐍 Pyodide Exercise Runner for TDD Learning
+ * Executes Python code in the browser using Pyodide with test validation
  */
 
-// Global Pyodide instance
 let pyodideInstance = null;
+let pyodideLoading = false;
+let pyodideLoadPromise = null;
 
 /**
- * Initialize Pyodide runtime
+ * Load Pyodide instance (singleton pattern)
+ * @returns {Promise<Pyodide>} Pyodide instance
  */
-async function initPyodide() {
+async function loadPyodide() {
     if (pyodideInstance) {
         return pyodideInstance;
     }
-    
-    try {
-        // Create timeout promise (30 seconds)
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
-                reject(new Error("Pyodide initialization timeout: CDN unreachable after 30 seconds"));
-            }, 30000);
-        });
-        
-        // Load Pyodide from CDN with timeout protection
-        const loadPromise = loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/"
-        });
-        
-        pyodideInstance = await Promise.race([loadPromise, timeoutPromise]);
-        
-        // Install common packages
-        await pyodideInstance.loadPackage(["micropip"]);
-        
-        console.log("✅ Pyodide initialized successfully");
-        return pyodideInstance;
-    } catch (error) {
-        console.error("❌ Failed to initialize Pyodide:", error);
-        // Reset instance on failure to allow retry
-        pyodideInstance = null;
-        throw error;
-    }
-}
 
-/**
- * Execute Python code and run tests
- */
-async function executePythonCode(exerciseId, userCode, testCode) {
-    try {
-        const pyodide = await initPyodide();
-        
-        // Setup StringIO redirection BEFORE executing any code
-        pyodide.runPython(`
-import sys
-from io import StringIO
-_original_stdout = sys.stdout
-sys.stdout = StringIO()
-        `);
-        
-        // Execute user code
-        pyodide.runPython(userCode);
-        
-        // Run tests if provided
-        let testResult = null;
-        if (testCode) {
-            testResult = pyodide.runPython(testCode);
-        }
-        
-        // Capture output
-        const output = pyodide.runPython("sys.stdout.getvalue()");
-        
-        // Restore original stdout
-        pyodide.runPython("sys.stdout = _original_stdout");
-        
-        return {
-            success: true,
-            output: output,
-            testResult: testResult
-        };
-    } catch (error) {
-        // Restore stdout even on error (finally-equivalent)
+    if (pyodideLoading && pyodideLoadPromise) {
+        return pyodideLoadPromise;
+    }
+
+    pyodideLoading = true;
+    pyodideLoadPromise = (async () => {
         try {
-            if (pyodideInstance) {
-                pyodideInstance.runPython(`
-try:
-    sys.stdout = _original_stdout
-except:
-    pass
-                `);
+            // Check if Pyodide is available
+            if (typeof loadPyodide === 'undefined') {
+                throw new Error('Pyodide library not loaded. Make sure pyodide.js is included before this script.');
             }
-        } catch (restoreError) {
-            // Ignore restore errors
-        }
-        
-        return {
-            success: false,
-            error: error.message,
-            traceback: error.toString()
-        };
-    }
-}
 
-/**
- * Enhanced exercise runner with Pyodide
- */
-async function runExerciseWithPyodide(exerciseId, testCases) {
-    const textarea = document.getElementById(`code_input_${exerciseId}`);
-    const output = document.getElementById(`output_${exerciseId}`);
-    const button = document.getElementById(`run_button_${exerciseId}`);
-    
-    if (!textarea || !output || !button) {
-        console.error("Exercise elements not found");
-        return;
-    }
-    
-    // Show loading
-    button.innerHTML = '⏳ Выполняется...';
-    button.disabled = true;
-    
-    const userCode = textarea.value;
-    
-    try {
-        // Build test code
-        let testCode = "";
-        let testsPassed = 0;
-        let totalTests = testCases ? testCases.length : 0;
-        let testDetails = [];
-        
-        if (testCases && testCases.length > 0) {
-            testCode = `
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-
-# User code
-${userCode}
-
-# Tests
-test_results = []
-tests_passed = 0
-            `;
-            
-            testCases.forEach((testCase, index) => {
-                // Escape description to safely embed in Python string literal
-                const escapedDescription = JSON.stringify(testCase.description);
-                const descriptionVar = `description_var_${index}`;
-                testCode += `
-${descriptionVar} = ${escapedDescription}
-try:
-    ${testCase.code}
-    test_results.append(("✅", f"Test ${index + 1}: {${descriptionVar}}"))
-except AssertionError as e:
-    test_results.append(("❌", f"Test ${index + 1}: {${descriptionVar}} - {e}"))
-except Exception as e:
-    test_results.append(("❌", f"Test ${index + 1}: {${descriptionVar}} - Error: {e}"))
-                `;
+            pyodideInstance = await loadPyodide({
+                indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
             });
-            
-            testCode += `
-for status, msg in test_results:
-    if status == "✅":
-        tests_passed += 1
-    print(f"{status} {msg}")
-            `;
-        }
-        
-        // Execute code
-        const result = await executePythonCode(exerciseId, userCode, testCode);
-        
-        if (result.success) {
-            // Parse test results
-            if (result.testResult) {
-                const lines = result.output.split('\n');
-                lines.forEach(line => {
-                    if (line.includes('✅')) testsPassed++;
-                    if (line.trim()) testDetails.push(line);
-                });
-            }
-            
-            displayResults(exerciseId, {
-                success: true,
-                tests_passed: testsPassed,
-                total_tests: totalTests,
-                test_details: testDetails.join('<br>'),
-                output: result.output
-            });
-        } else {
-            displayResults(exerciseId, {
-                success: false,
-                error: result.error,
-                traceback: result.traceback
-            });
-        }
-    } catch (error) {
-        displayResults(exerciseId, {
-            success: false,
-            error: `Execution error: ${error.message}`
-        });
-    } finally {
-        button.innerHTML = '🚀 Запустить и проверить';
-        button.disabled = false;
-    }
-}
 
-/**
- * Fallback to simple validation if Pyodide fails
- */
-function runExerciseSimple(exerciseId) {
-    const textarea = document.getElementById(`code_input_${exerciseId}`);
-    const output = document.getElementById(`output_${exerciseId}`);
-    const button = document.getElementById(`run_button_${exerciseId}`);
-    
-    button.innerHTML = '⏳ Выполняется...';
-    button.disabled = true;
-    
-    setTimeout(() => {
-        const userCode = textarea.value;
-        let result;
-        
-        try {
-            // Basic syntax check
-            if (userCode.includes('def ') && userCode.includes('return')) {
-                result = {
-                    success: true,
-                    tests_passed: 1,
-                    total_tests: 1,
-                    test_details: '<p>✅ Синтаксис корректен</p>'
-                };
-            } else {
-                result = {
-                    success: false,
-                    error: 'Функция должна содержать def и return',
-                    hints: ['Добавьте ключевое слово def', 'Добавьте оператор return']
-                };
-            }
+            console.log('Pyodide loaded successfully');
+            return pyodideInstance;
         } catch (error) {
-            result = {
-                success: false,
-                error: 'Ошибка в коде: ' + error.message
+            console.error('Failed to load Pyodide:', error);
+            pyodideLoading = false;
+            pyodideLoadPromise = null;
+            throw error;
+        }
+    })();
+
+    return pyodideLoadPromise;
+}
+
+/**
+ * Check if code is safe to execute (security validation)
+ * @param {string} code - Python code to check
+ * @returns {Object} - {safe: boolean, reason: string}
+ */
+function isCodeSafe(code) {
+    // Dangerous patterns that should be blocked
+    const dangerousPatterns = [
+        /__import__/gi,
+        /exec\s*\(/gi,
+        /eval\s*\(/gi,
+        /compile\s*\(/gi,
+        /open\s*\(/gi,
+        /file\s*\(/gi,
+        /input\s*\(/gi,
+        /raw_input\s*\(/gi,
+        /subprocess/gi,
+        /os\.system/gi,
+        /os\.popen/gi,
+        /os\.exec/gi,
+        /shutil/gi,
+        /pickle/gi,
+        /marshal/gi,
+        /__builtins__/gi,
+        /__globals__/gi,
+        /__dict__/gi,
+        /import\s+sys/gi,
+        /sys\.exit/gi,
+        /import\s+ctypes/gi,
+        /import\s+os/gi,
+        /import\s+subprocess/gi,
+    ];
+
+    // Check for dangerous patterns
+    for (const pattern of dangerousPatterns) {
+        if (pattern.test(code)) {
+            const match = code.match(pattern);
+            return {
+                safe: false,
+                reason: `Dangerous code detected: "${match[0]}" is not allowed for security reasons.`
             };
         }
-        
-        displayResults(exerciseId, result);
-        button.innerHTML = '🚀 Запустить и проверить';
-        button.disabled = false;
-    }, 1000);
+    }
+
+    // Check for suspicious import statements
+    const importPattern = /import\s+(\w+)/gi;
+    const suspiciousModules = ['sys', 'os', 'subprocess', 'ctypes', 'socket', 'urllib'];
+    let match;
+    while ((match = importPattern.exec(code)) !== null) {
+        if (suspiciousModules.includes(match[1].toLowerCase())) {
+            return {
+                safe: false,
+                reason: `Import of "${match[1]}" is not allowed for security reasons.`
+            };
+        }
+    }
+
+    return { safe: true, reason: '' };
 }
 
-// Export for use in HTML
+/**
+ * Run exercise with Pyodide execution and test validation
+ * @param {string} exerciseId - Unique exercise identifier
+ * @param {Array} testCases - Array of test case objects with 'code' and 'description'
+ */
+async function runExerciseWithPyodide(exerciseId, testCases = []) {
+    const textarea = document.getElementById(`code_input_${exerciseId}`);
+    const output = document.getElementById(`output_${exerciseId}`);
+    const button = document.getElementById(`run_button_${exerciseId}`);
+
+    if (!textarea || !output || !button) {
+        console.error(`Exercise elements not found for ID: ${exerciseId}`);
+        return;
+    }
+
+    const originalButtonText = button.innerHTML;
+    button.innerHTML = '⏳ Загружается Pyodide...';
+    button.disabled = true;
+
+    // Show output area
+    output.style.display = 'block';
+    const outputContent = output.querySelector('.output-content');
+    outputContent.innerHTML = '<p>⏳ Инициализация Pyodide...</p>';
+
+    try {
+        // Load Pyodide
+        const pyodide = await loadPyodide();
+        
+        button.innerHTML = '⏳ Выполняется...';
+        outputContent.innerHTML = '<p>⏳ Выполнение кода...</p>';
+
+        const userCode = textarea.value.trim();
+
+        if (!userCode) {
+            displayResults(exerciseId, {
+                success: false,
+                error: 'Код не может быть пустым. Пожалуйста, введите код.',
+                hints: ['Начните с написания функции', 'Используйте начальный код как основу']
+            });
+            return;
+        }
+
+        // Security check
+        const safetyCheck = isCodeSafe(userCode);
+        if (!safetyCheck.safe) {
+            displayResults(exerciseId, {
+                success: false,
+                error: `Безопасность: ${safetyCheck.reason}`,
+                hints: [
+                    'Использование системных функций запрещено',
+                    'Используйте только стандартные библиотеки Python',
+                    'Избегайте операций с файловой системой и процессами'
+                ]
+            });
+            return;
+        }
+
+        // Execute user code
+        let executionError = null;
+        try {
+            pyodide.runPython(userCode);
+        } catch (error) {
+            executionError = error;
+        }
+
+        // If there's an execution error, show it immediately
+        if (executionError) {
+            displayResults(exerciseId, {
+                success: false,
+                error: `Ошибка выполнения: ${executionError.message}`,
+                hints: [
+                    'Проверьте синтаксис Python',
+                    'Убедитесь, что все переменные определены',
+                    'Проверьте отступы (используйте пробелы, а не табы)'
+                ]
+            });
+            return;
+        }
+
+        // Run tests if provided
+        if (testCases && testCases.length > 0) {
+            let testsPassed = 0;
+            let totalTests = testCases.length;
+            let testDetails = [];
+            let testErrors = [];
+
+            for (let i = 0; i < testCases.length; i++) {
+                const testCase = testCases[i];
+                const testCode = testCase.code || testCase;
+                const testDescription = testCase.description || `Тест ${i + 1}`;
+
+                try {
+                    pyodide.runPython(testCode);
+                    testsPassed++;
+                    testDetails.push(`<p>✅ ${testDescription}</p>`);
+                } catch (error) {
+                    testErrors.push({
+                        description: testDescription,
+                        error: error.message
+                    });
+                    testDetails.push(`<p>❌ ${testDescription}: ${error.message}</p>`);
+                }
+            }
+
+            const success = testsPassed === totalTests;
+            displayResults(exerciseId, {
+                success: success,
+                tests_passed: testsPassed,
+                total_tests: totalTests,
+                test_details: testDetails.join(''),
+                error: testErrors.length > 0 ? `Не пройдено тестов: ${testErrors.length}` : null,
+                hints: success ? [] : [
+                    'Проверьте логику вашей функции',
+                    'Убедитесь, что функция возвращает правильные значения',
+                    'Проверьте граничные случаи'
+                ]
+            });
+        } else {
+            // No tests provided, just check if code executed successfully
+            displayResults(exerciseId, {
+                success: true,
+                tests_passed: 0,
+                total_tests: 0,
+                test_details: '<p>✅ Код выполнен успешно</p><p>💡 Добавьте тесты для проверки корректности</p>'
+            });
+        }
+
+    } catch (error) {
+        console.error('Pyodide execution error:', error);
+        displayResults(exerciseId, {
+            success: false,
+            error: `Ошибка: ${error.message}`,
+            hints: [
+                'Проверьте подключение к интернету (Pyodide загружается с CDN)',
+                'Обновите страницу и попробуйте снова',
+                'Убедитесь, что используете поддерживаемые библиотеки Python'
+            ]
+        });
+    } finally {
+        button.innerHTML = originalButtonText;
+        button.disabled = false;
+    }
+}
+
+/**
+ * Display results in the exercise output area
+ * @param {string} exerciseId - Exercise identifier
+ * @param {Object} data - Result data with success, error, test details, etc.
+ */
+function displayResults(exerciseId, data) {
+    const output = document.getElementById(`output_${exerciseId}`);
+    const outputContent = output.querySelector('.output-content');
+
+    output.style.display = 'block';
+
+    if (data.success) {
+        const successHtml = `
+            <div class="success-message">
+                <h5>✅ Поздравляем! Все тесты пройдены!</h5>
+                ${data.total_tests > 0 ? `
+                <div class="test-results">
+                    <p><strong>Пройдено тестов:</strong> ${data.tests_passed}/${data.total_tests}</p>
+                    <div class="test-details">
+                        ${data.test_details || ''}
+                    </div>
+                </div>
+                ` : ''}
+                ${data.test_details || ''}
+            </div>
+        `;
+        outputContent.innerHTML = successHtml;
+        output.className = 'exercise-output success';
+    } else {
+        const errorMsg = data.error || 'Неизвестная ошибка';
+        let hintsHtml = '';
+        
+        if (data.hints && data.hints.length > 0) {
+            const hintsList = data.hints.map(hint => `<li>${hint}</li>`).join('');
+            hintsHtml = `
+                <div class="hints">
+                    <h6>💡 Подсказки:</h6>
+                    <ul>${hintsList}</ul>
+                </div>
+            `;
+        }
+
+        const errorHtml = `
+            <div class="error-message">
+                <h5>❌ Есть ошибки в коде</h5>
+                <div class="error-details">
+                    <pre class="error-traceback">${escapeHtml(errorMsg)}</pre>
+                </div>
+                ${hintsHtml}
+                ${data.total_tests > 0 ? `
+                <div class="test-results">
+                    <p><strong>Пройдено тестов:</strong> ${data.tests_passed || 0}/${data.total_tests}</p>
+                    <div class="test-details">
+                        ${data.test_details || ''}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        outputContent.innerHTML = errorHtml;
+        output.className = 'exercise-output error';
+    }
+}
+
+/**
+ * Escape HTML to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Reset code to initial state
+ * @param {string} exerciseId - Exercise identifier
+ */
+function resetCode(exerciseId) {
+    const textarea = document.getElementById(`code_input_${exerciseId}`);
+    const output = document.getElementById(`output_${exerciseId}`);
+    
+    if (textarea) {
+        const initialCode = textarea.getAttribute('data-initial') || '';
+        textarea.value = initialCode.replace(/\\n/g, '\n');
+    }
+    
+    if (output) {
+        output.style.display = 'none';
+        output.className = 'exercise-output';
+    }
+}
+
+// Export functions to global scope for use in HTML
 window.runExerciseWithPyodide = runExerciseWithPyodide;
-window.runExerciseSimple = runExerciseSimple;
-window.initPyodide = initPyodide;
+window.resetCode = resetCode;
+window.displayResults = displayResults;
 

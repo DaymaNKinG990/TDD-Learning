@@ -16,12 +16,11 @@ Features:
 - Automatic level recommendation
 """
 
-from typing import Dict, List, Any, Optional
-from datetime import datetime
-from dataclasses import dataclass, field
-from enum import Enum
 import json
-
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # =============================================================================
 # DIFFICULTY SYSTEM CORE
@@ -60,8 +59,8 @@ class LearningObjective:
     """Learning objective for a task"""
 
     description: str
-    skill_requirements: List[SkillRequirement]
-    assessment_criteria: List[str]
+    skill_requirements: list[SkillRequirement]
+    assessment_criteria: list[str]
 
 
 @dataclass
@@ -72,9 +71,9 @@ class TaskTemplate:
     title: str
     description: str
     module: str
-    base_objectives: List[LearningObjective]
-    estimated_time_minutes: Dict[DifficultyLevel, int]
-    prerequisites: List[str] = field(default_factory=list)
+    base_objectives: list[LearningObjective]
+    estimated_time_minutes: dict[DifficultyLevel, int]
+    prerequisites: list[str] = field(default_factory=list)
 
     def generate_task(self, level: DifficultyLevel) -> "ProgrammingTask":
         """Generate task for specific difficulty level"""
@@ -90,15 +89,15 @@ class ProgrammingTask:
     title: str
     description: str
     difficulty: DifficultyLevel
-    objectives: List[LearningObjective]
+    objectives: list[LearningObjective]
     starter_code: str
-    instructions: List[str]
-    hints: List[str]
-    test_cases: List[str]
+    instructions: list[str]
+    hints: list[str]
+    test_cases: list[str]
     solution_template: str
-    grading_rubric: Dict[str, int]
+    grading_rubric: dict[str, int]
     estimated_time: int
-    resources: List[str] = field(default_factory=list)
+    resources: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -106,12 +105,12 @@ class StudentProgress:
     """Track student progress across difficulty levels"""
 
     student_id: str
-    skill_levels: Dict[SkillDomain, int] = field(default_factory=dict)
-    completed_tasks: List[str] = field(default_factory=list)
-    current_level_recommendations: Dict[str, DifficultyLevel] = field(
+    skill_levels: dict[SkillDomain, int] = field(default_factory=dict)
+    completed_tasks: list[str] = field(default_factory=list)
+    current_level_recommendations: dict[str, DifficultyLevel] = field(
         default_factory=dict
     )
-    performance_history: List[Dict[str, Any]] = field(default_factory=list)
+    performance_history: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self):
         # Initialize skill levels
@@ -255,17 +254,17 @@ Follow the step-by-step instructions to refactor the UserService class.
 # Step 1: Create UserValidator class
 class UserValidator:
     """TODO: Add class documentation"""
-    
+
     def validate_user_data(self, user_data):
         """
         TODO: Implement user data validation
-        
+
         Args:
             user_data (dict): User data to validate
-            
+
         Returns:
             bool: True if valid, False otherwise
-            
+
         Steps:
         1. Check if username is at least 3 characters
         2. Check if email contains @ symbol
@@ -278,32 +277,32 @@ class UserValidator:
 # Step 2: Create UserRepository class
 class UserRepository:
     """TODO: Add class documentation"""
-    
+
     def __init__(self):
         """Initialize the repository"""
         # TODO: Set up database connection or in-memory storage
         pass
-    
+
     def save_user(self, user):
         """
         TODO: Implement user saving
-        
+
         Args:
             user: User object to save
-            
+
         Returns:
             User: Saved user object
         """
         # TODO: Implement save logic
         pass
-    
+
     def find_by_username(self, username):
         """
         TODO: Implement user finding by username
-        
+
         Args:
             username (str): Username to search for
-            
+
         Returns:
             User or None: Found user or None
         """
@@ -314,14 +313,14 @@ class UserRepository:
 # Step 3: Create EmailService class
 class EmailService:
     """TODO: Add class documentation"""
-    
+
     def send_welcome_email(self, user):
         """
         TODO: Implement welcome email sending
-        
+
         Args:
             user: User object to send email to
-            
+
         Returns:
             bool: True if sent successfully
         """
@@ -332,7 +331,7 @@ class EmailService:
 # Step 4: Create User domain model
 class User:
     """TODO: Add class documentation"""
-    
+
     def __init__(self, username, email, password):
         """TODO: Initialize user object"""
         # TODO: Set user properties
@@ -343,14 +342,14 @@ class User:
 class UserService:
     """
     Refactored UserService following Single Responsibility Principle
-    
+
     This class now only handles business logic orchestration.
     """
-    
+
     def __init__(self, validator, repository, email_service):
         """
         TODO: Initialize dependencies
-        
+
         Args:
             validator: UserValidator instance
             repository: UserRepository instance
@@ -358,17 +357,17 @@ class UserService:
         """
         # TODO: Store dependencies
         pass
-    
+
     def create_user(self, user_data):
         """
         TODO: Implement user creation using injected dependencies
-        
+
         Args:
             user_data (dict): User data
-            
+
         Returns:
             User: Created user object
-            
+
         Steps:
         1. Validate data using validator
         2. Create User object
@@ -395,7 +394,7 @@ if __name__ == "__main__":
 
         return "# TODO: Implement starter code for " + template.id
 
-    def _generate_beginner_instructions(self, template: TaskTemplate) -> List[str]:
+    def _generate_beginner_instructions(self, template: TaskTemplate) -> list[str]:
         """Generate detailed step-by-step instructions for beginners"""
         if template.id == "srp_refactoring":
             return [
@@ -438,7 +437,7 @@ if __name__ == "__main__":
 
         return ["Complete the implementation following the TODO comments"]
 
-    def _generate_beginner_hints(self, template: TaskTemplate) -> List[str]:
+    def _generate_beginner_hints(self, _template: TaskTemplate) -> list[str]:
         """Generate helpful hints for beginners"""
         return [
             "💡 Start with the simplest class first (usually the data models)",
@@ -449,19 +448,19 @@ if __name__ == "__main__":
             "💡 Ask yourself: 'What is this class responsible for?'",
         ]
 
-    def _generate_intermediate_instructions(self, template: TaskTemplate) -> List[str]:
+    def _generate_intermediate_instructions(self, template: TaskTemplate) -> list[str]:
         """Generate instructions for intermediate level"""
         return self._generate_beginner_instructions(template)
 
-    def _generate_intermediate_hints(self, template: TaskTemplate) -> List[str]:
+    def _generate_intermediate_hints(self, template: TaskTemplate) -> list[str]:
         """Generate hints for intermediate level"""
         return self._generate_beginner_hints(template)
 
-    def _generate_advanced_instructions(self, template: TaskTemplate) -> List[str]:
+    def _generate_advanced_instructions(self, template: TaskTemplate) -> list[str]:
         """Generate instructions for advanced level"""
         return self._generate_beginner_instructions(template)
 
-    def _generate_advanced_hints(self, template: TaskTemplate) -> List[str]:
+    def _generate_advanced_hints(self, template: TaskTemplate) -> list[str]:
         """Generate hints for advanced level"""
         return self._generate_beginner_hints(template)
 
@@ -513,11 +512,11 @@ class UserService:
     Orchestrates user creation process using injected dependencies.
     Should only contain business logic, delegating specific responsibilities.
     """
-    
+
     def __init__(self, validator: UserValidator, repository: IUserRepository, email_service: EmailService):
         # TODO: Store dependencies
         pass
-    
+
     def create_user(self, user_data: Dict[str, Any]) -> User:
         # TODO: Implement user creation workflow
         pass
@@ -600,8 +599,8 @@ if __name__ == "__main__":
         return "# TODO: Implement minimal starter code for " + template.id
 
     def _simplify_objectives(
-        self, objectives: List[LearningObjective]
-    ) -> List[LearningObjective]:
+        self, objectives: list[LearningObjective]
+    ) -> list[LearningObjective]:
         """Simplify learning objectives for beginners"""
         simplified = []
         for obj in objectives:
@@ -627,8 +626,8 @@ if __name__ == "__main__":
         return simplified
 
     def _enhance_objectives(
-        self, objectives: List[LearningObjective]
-    ) -> List[LearningObjective]:
+        self, objectives: list[LearningObjective]
+    ) -> list[LearningObjective]:
         """Enhance learning objectives for advanced level"""
         enhanced = []
         for obj in objectives:
@@ -669,7 +668,7 @@ if __name__ == "__main__":
 
         return enhanced
 
-    def _generate_beginner_tests(self, template: TaskTemplate) -> List[str]:
+    def _generate_beginner_tests(self, _template: TaskTemplate) -> list[str]:
         """Generate basic tests for beginners"""
         return [
             "Test that all required classes exist",
@@ -678,7 +677,7 @@ if __name__ == "__main__":
             "Verify SRP compliance with simple checks",
         ]
 
-    def _generate_intermediate_tests(self, template: TaskTemplate) -> List[str]:
+    def _generate_intermediate_tests(self, _template: TaskTemplate) -> list[str]:
         """Generate moderate tests for intermediate level"""
         return [
             "Test all classes and their public interfaces",
@@ -688,7 +687,7 @@ if __name__ == "__main__":
             "Test edge cases and boundary conditions",
         ]
 
-    def _generate_advanced_tests(self, template: TaskTemplate) -> List[str]:
+    def _generate_advanced_tests(self, _template: TaskTemplate) -> list[str]:
         """Generate comprehensive tests for advanced level"""
         return [
             "Unit tests for all components with 90%+ coverage",
@@ -700,7 +699,7 @@ if __name__ == "__main__":
             "Memory leak and resource management tests",
         ]
 
-    def _generate_beginner_rubric(self, template: TaskTemplate) -> Dict[str, int]:
+    def _generate_beginner_rubric(self, _template: TaskTemplate) -> dict[str, int]:
         """Generate grading rubric for beginners"""
         return {
             "Code Compiles and Runs": 20,
@@ -711,7 +710,7 @@ if __name__ == "__main__":
             "SRP Basic Understanding": 10,
         }
 
-    def _generate_intermediate_rubric(self, template: TaskTemplate) -> Dict[str, int]:
+    def _generate_intermediate_rubric(self, _template: TaskTemplate) -> dict[str, int]:
         """Generate grading rubric for intermediate level"""
         return {
             "Functional Requirements": 25,
@@ -723,7 +722,7 @@ if __name__ == "__main__":
             "Documentation": 5,
         }
 
-    def _generate_advanced_rubric(self, template: TaskTemplate) -> Dict[str, int]:
+    def _generate_advanced_rubric(self, _template: TaskTemplate) -> dict[str, int]:
         """Generate grading rubric for advanced level"""
         return {
             "Architecture and Design": 25,
@@ -735,7 +734,7 @@ if __name__ == "__main__":
             "Innovation and Best Practices": 5,
         }
 
-    def _generate_beginner_resources(self, template: TaskTemplate) -> List[str]:
+    def _generate_beginner_resources(self, _template: TaskTemplate) -> list[str]:
         """Generate learning resources for beginners"""
         return [
             "📖 SOLID Principles Guide - Section 1: Introduction",
@@ -745,7 +744,7 @@ if __name__ == "__main__":
             "📝 Cheat Sheet: Python Class Basics",
         ]
 
-    def _generate_intermediate_resources(self, template: TaskTemplate) -> List[str]:
+    def _generate_intermediate_resources(self, _template: TaskTemplate) -> list[str]:
         """Generate learning resources for intermediate level"""
         return [
             "📖 Clean Code - Chapter 10: Classes",
@@ -755,7 +754,7 @@ if __name__ == "__main__":
             "📝 Best Practices: Error Handling in Python",
         ]
 
-    def _generate_advanced_resources(self, template: TaskTemplate) -> List[str]:
+    def _generate_advanced_resources(self, _template: TaskTemplate) -> list[str]:
         """Generate learning resources for advanced level"""
         return [
             "📖 Clean Architecture - Robert Martin",
@@ -794,14 +793,14 @@ class UserValidator:
     Validates user data according to business rules.
     Single Responsibility: Only validation logic.
     """
-    
+
     def validate_user_data(self, user_data: dict) -> bool:
         """
         Validates user data for registration.
-        
+
         Args:
             user_data (dict): Dictionary with 'username', 'email', 'password'
-            
+
         Returns:
             bool: True if all validations pass, False otherwise
         """
@@ -809,17 +808,17 @@ class UserValidator:
         username = user_data.get('username', '')
         if len(username) < 3:
             return False
-        
+
         # Check email format (must contain @ symbol)
         email = user_data.get('email', '')
         if '@' not in email:
             return False
-        
+
         # Check password strength (minimum 8 characters)
         password = user_data.get('password', '')
         if len(password) < 8:
             return False
-        
+
         return True
 
 
@@ -831,31 +830,31 @@ class UserRepository:
     Manages user data storage and retrieval.
     Single Responsibility: Only data access operations.
     """
-    
+
     def __init__(self):
         """Initialize in-memory storage for demonstration"""
         self._users = {}  # In production, this would be a database
-    
+
     def save_user(self, user: 'User') -> 'User':
         """
         Saves user to storage.
-        
+
         Args:
             user: User object to save
-            
+
         Returns:
             User: Saved user object
         """
         self._users[user.username] = user
         return user
-    
+
     def find_by_username(self, username: str) -> Optional['User']:
         """
         Finds user by username.
-        
+
         Args:
             username (str): Username to search for
-            
+
         Returns:
             User or None: Found user or None if not found
         """
@@ -870,14 +869,14 @@ class EmailService:
     Manages email sending operations.
     Single Responsibility: Only email communication.
     """
-    
+
     def send_welcome_email(self, user: 'User') -> bool:
         """
         Sends welcome email to new user.
-        
+
         Args:
             user: User object to send email to
-            
+
         Returns:
             bool: True if sent successfully
         """
@@ -894,11 +893,11 @@ class User:
     Domain model representing a user.
     Single Responsibility: Only user data representation.
     """
-    
+
     def __init__(self, username: str, email: str, password: str):
         """
         Initialize user with provided data.
-        
+
         Args:
             username (str): User's username
             email (str): User's email address
@@ -907,7 +906,7 @@ class User:
         self.username = username
         self.email = email
         self.password = password  # In production, store hashed password
-    
+
     def __str__(self) -> str:
         """String representation of user"""
         return f"User(username='{self.username}', email='{self.email}')"
@@ -920,15 +919,15 @@ class UserService:
     """
     Orchestrates user-related business operations.
     Single Responsibility: Only business logic coordination.
-    
+
     Uses dependency injection to follow Dependency Inversion Principle.
     """
-    
-    def __init__(self, validator: UserValidator, repository: UserRepository, 
+
+    def __init__(self, validator: UserValidator, repository: UserRepository,
                  email_service: EmailService):
         """
         Initialize service with dependencies.
-        
+
         Args:
             validator: UserValidator instance for validation
             repository: UserRepository instance for data access
@@ -937,37 +936,37 @@ class UserService:
         self.validator = validator
         self.repository = repository
         self.email_service = email_service
-    
+
     def create_user(self, user_data: dict) -> User:
         """
         Creates a new user following the complete workflow.
-        
+
         Args:
             user_data (dict): User data dictionary
-            
+
         Returns:
             User: Created user object
-            
+
         Raises:
             ValueError: If validation fails
         """
         # Step 1: Validate user data
         if not self.validator.validate_user_data(user_data):
             raise ValueError("Invalid user data")
-        
+
         # Step 2: Create User domain object
         user = User(
             username=user_data['username'],
             email=user_data['email'],
             password=user_data['password']
         )
-        
+
         # Step 3: Save user to repository
         saved_user = self.repository.save_user(user)
-        
+
         # Step 4: Send welcome email
         self.email_service.send_welcome_email(saved_user)
-        
+
         # Step 5: Return created user
         return saved_user
 
@@ -981,10 +980,10 @@ def main():
     validator = UserValidator()
     repository = UserRepository()
     email_service = EmailService()
-    
+
     # Create UserService with injected dependencies
     user_service = UserService(validator, repository, email_service)
-    
+
     # Test user creation
     try:
         user_data = {
@@ -1034,7 +1033,7 @@ from typing import Optional
 def solution_function():
     """
     Main solution function with detailed documentation.
-    
+
     Steps:
     1. [Step 1 description]
     2. [Step 2 description]
@@ -1042,10 +1041,10 @@ def solution_function():
     """
     # Step 1: [Detailed explanation]
     pass
-    
+
     # Step 2: [Detailed explanation]
     pass
-    
+
     # Step 3: [Detailed explanation]
     pass
 
@@ -1074,7 +1073,7 @@ Solution with moderate guidance and design pattern hints
 
 class UserValidator:
     """Validates user data - follows SRP"""
-    
+
     def validate_user_data(self, user_data: dict) -> bool:
         """Validate username, email, and password"""
         if len(user_data.get('username', '')) < 3:
@@ -1088,15 +1087,15 @@ class UserValidator:
 
 class UserRepository:
     """Manages user data persistence - follows SRP"""
-    
+
     def __init__(self):
         self._users = {}
-    
+
     def save_user(self, user: 'User') -> 'User':
         """Save user to storage"""
         self._users[user.username] = user
         return user
-    
+
     def find_by_username(self, username: str) -> Optional['User']:
         """Find user by username"""
         return self._users.get(username)
@@ -1104,7 +1103,7 @@ class UserRepository:
 
 class EmailService:
     """Handles email operations - follows SRP"""
-    
+
     def send_welcome_email(self, user: 'User') -> bool:
         """Send welcome email"""
         print(f"📧 Welcome email sent to {user.email}")
@@ -1113,30 +1112,30 @@ class EmailService:
 
 class User:
     """User domain model"""
-    
+
     def __init__(self, username: str, email: str, password: str):
         self.username = username
         self.email = email
         self.password = password
-    
+
     def __str__(self) -> str:
         return f"User(username='{self.username}', email='{self.email}')"
 
 
 class UserService:
     """Orchestrates user business logic - uses dependency injection"""
-    
-    def __init__(self, validator: UserValidator, repository: UserRepository, 
+
+    def __init__(self, validator: UserValidator, repository: UserRepository,
                  email_service: EmailService):
         self.validator = validator
         self.repository = repository
         self.email_service = email_service
-    
+
     def create_user(self, user_data: dict) -> User:
         """Create user following validation -> save -> notify workflow"""
         if not self.validator.validate_user_data(user_data):
             raise ValueError("Invalid user data")
-        
+
         user = User(user_data['username'], user_data['email'], user_data['password'])
         saved_user = self.repository.save_user(user)
         self.email_service.send_welcome_email(saved_user)
@@ -1149,7 +1148,7 @@ def main():
     repository = UserRepository()
     email_service = EmailService()
     user_service = UserService(validator, repository, email_service)
-    
+
     user_data = {
         'username': 'johndoe',
         'email': 'john@example.com',
@@ -1224,11 +1223,11 @@ class UserRepository:
     def __init__(self):
         # Consider: database connection, connection pooling
         pass
-    
+
     def save_user(self, user: 'User') -> 'User':
         # Implement with transaction handling
         pass
-    
+
     def find_by_username(self, username: str) -> Optional['User']:
         pass
 
@@ -1246,11 +1245,11 @@ class User:
 
 
 class UserService:
-    def __init__(self, validator: UserValidator, repository: UserRepository, 
+    def __init__(self, validator: UserValidator, repository: UserRepository,
                  email_service: EmailService):
         # Implement dependency injection
         pass
-    
+
     def create_user(self, user_data: dict) -> User:
         # Implement with full error handling and logging
         pass
@@ -1302,7 +1301,7 @@ class ProgressTracker:
     """Track student progress and recommend difficulty levels"""
 
     def __init__(self):
-        self.students: Dict[str, StudentProgress] = {}
+        self.students: dict[str, StudentProgress] = {}
 
     def get_student_progress(self, student_id: str) -> StudentProgress:
         """Get or create student progress"""
@@ -1323,10 +1322,7 @@ class ProgressTracker:
         progress = self.get_student_progress(student_id)
 
         # Calculate percentage safely, guarding against zero or negative max_score
-        if max_score <= 0:
-            percentage = 0.0
-        else:
-            percentage = (score / max_score) * 100
+        percentage = 0.0 if max_score <= 0 else score / max_score * 100
 
         performance = {
             "task_id": task_id,
@@ -1348,7 +1344,7 @@ class ProgressTracker:
         self._update_level_recommendations(progress)
 
     def _update_skill_levels(
-        self, progress: StudentProgress, performance: Dict[str, Any]
+        self, progress: StudentProgress, performance: dict[str, Any]
     ):
         """Update skill levels based on performance"""
         percentage = performance["percentage"]
@@ -1380,10 +1376,9 @@ class ProgressTracker:
             # Good performance - slight increase or maintain
             if difficulty != DifficultyLevel.BEGINNER:
                 progress.skill_levels[domain] = min(10, current_level + 1)
-        elif percentage < 50:
+        elif percentage < 50 and current_level > 1:
             # Poor performance - might need to decrease level
-            if current_level > 1:
-                progress.skill_levels[domain] = max(1, current_level - 1)
+            progress.skill_levels[domain] = max(1, current_level - 1)
 
     def _update_level_recommendations(self, progress: StudentProgress):
         """Update difficulty level recommendations"""
@@ -1419,7 +1414,7 @@ class ProgressTracker:
             domain.value, DifficultyLevel.BEGINNER
         )
 
-    def get_progress_summary(self, student_id: str) -> Dict[str, Any]:
+    def get_progress_summary(self, student_id: str) -> dict[str, Any]:
         """Get comprehensive progress summary"""
         progress = self.get_student_progress(student_id)
 
@@ -1444,7 +1439,7 @@ class ProgressTracker:
             "suggested_next_topics": self._suggest_next_topics(progress),
         }
 
-    def _calculate_trend(self, performance_history: List[Dict[str, Any]]) -> str:
+    def _calculate_trend(self, performance_history: list[dict[str, Any]]) -> str:
         """Calculate performance trend"""
         if len(performance_history) < 3:
             return "insufficient_data"
@@ -1466,7 +1461,7 @@ class ProgressTracker:
         else:
             return "stable"
 
-    def _suggest_next_topics(self, progress: StudentProgress) -> List[str]:
+    def _suggest_next_topics(self, progress: StudentProgress) -> list[str]:
         """Suggest next topics based on progress"""
         suggestions = []
 
@@ -1494,7 +1489,7 @@ class TaskLibrary:
     def __init__(self):
         self.templates = self._initialize_templates()
 
-    def _initialize_templates(self) -> Dict[str, TaskTemplate]:
+    def _initialize_templates(self) -> dict[str, TaskTemplate]:
         """Initialize task templates"""
         return {
             "srp_refactoring": TaskTemplate(
@@ -1593,15 +1588,15 @@ class TaskLibrary:
             ),
         }
 
-    def get_template(self, template_id: str) -> Optional[TaskTemplate]:
+    def get_template(self, template_id: str) -> TaskTemplate | None:
         """Get task template by ID"""
         return self.templates.get(template_id)
 
-    def list_templates(self) -> List[TaskTemplate]:
+    def list_templates(self) -> list[TaskTemplate]:
         """List all available templates"""
         return list(self.templates.values())
 
-    def get_templates_by_module(self, module: str) -> List[TaskTemplate]:
+    def get_templates_by_module(self, module: str) -> list[TaskTemplate]:
         """Get templates for specific module"""
         return [t for t in self.templates.values() if t.module == module]
 
@@ -1656,11 +1651,11 @@ class AdaptiveLearningSystem:
             student_id, task_id, score, max_score, time_taken, difficulty
         )
 
-    def get_student_dashboard(self, student_id: str) -> Dict[str, Any]:
+    def get_student_dashboard(self, student_id: str) -> dict[str, Any]:
         """Get student dashboard with progress and recommendations"""
         return self.progress_tracker.get_progress_summary(student_id)
 
-    def recommend_next_task(self, student_id: str) -> Optional[str]:
+    def recommend_next_task(self, student_id: str) -> str | None:
         """Recommend next task for student"""
         progress = self.progress_tracker.get_student_progress(student_id)
 
@@ -1669,10 +1664,10 @@ class AdaptiveLearningSystem:
         all_templates = self.task_library.list_templates()
 
         for template in all_templates:
-            if template.id not in completed:
-                # Check prerequisites
-                if self._check_prerequisites(student_id, template):
-                    return template.id
+            if template.id not in completed and self._check_prerequisites(
+                student_id, template
+            ):
+                return template.id
 
         return None
 
@@ -1687,10 +1682,9 @@ class AdaptiveLearningSystem:
         ):
             return False
 
-        if template.module == "Architecture" and len(progress.completed_tasks) < 2:
-            return False
-
-        return True
+        return not (
+            template.module == "Architecture" and len(progress.completed_tasks) < 2
+        )
 
 
 # =============================================================================

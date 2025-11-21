@@ -1,8 +1,9 @@
 """
-Основной модуль с макросами для интерактивных упражнений Architecture and Patterns
+Основной модуль с макросами для интерактивных упражнений TDD Learning
 """
 
 import contextlib
+import json
 import os
 import re
 import subprocess
@@ -36,7 +37,7 @@ def define_env(env: "MacrosPlugin") -> None:
     # Добавить базовые переменные
     env.variables.update(
         {
-            "project_name": "Architecture and Patterns",
+            "project_name": "TDD Learning",
             "project_version": "1.0.0",
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
         }
@@ -68,11 +69,11 @@ def code_input_form(
         exercise_id: Уникальный идентификатор упражнения
         initial_code: Начальный код в форме
         placeholder: Текст плейсхолдера
-        use_pyodide: bool (default True) - когда True, функция выполняется под Pyodide,
-            когда False использует хост-интерпретатор
-        test_cases: list | None (default None) - опциональный список тестовых случаев
-            (входные данные/ожидаемые результаты) для запуска и валидации кода.
-            None означает, что дополнительные тестовые случаи не предоставлены
+        use_pyodide: bool (default True) - использовать Pyodide для выполнения кода в браузере
+        test_cases: list | None (default None) - опциональный список тестовых случаев.
+            Каждый элемент может быть строкой (код теста) или словарем с ключами:
+            - 'code': str - код теста (assert statement)
+            - 'description': str - описание теста
 
     Returns:
         HTML строка с формой ввода кода
@@ -88,31 +89,33 @@ def code_input_form(
         initial_code.replace('"', "&quot;").replace("\n", "\\n").replace("\r", "")
     )
 
-    # Build test cases JSON
-    import json
-    import html
-
+    # Prepare test cases for Pyodide
     test_cases_json = "[]"
     if test_cases:
-        test_cases_json = json.dumps(test_cases)
-
-    # Escape JSON string for HTML attribute (escape &, <, >, ", ')
-    escaped_test_cases_json = html.escape(test_cases_json, quote=True)
+        # Normalize test cases: convert strings to dicts if needed
+        normalized_tests = []
+        for test in test_cases:
+            if isinstance(test, str):
+                normalized_tests.append({"code": test, "description": ""})
+            elif isinstance(test, dict):
+                normalized_tests.append(
+                    {
+                        "code": test.get("code", ""),
+                        "description": test.get("description", ""),
+                    }
+                )
+        test_cases_json = json.dumps(normalized_tests)
 
     # Choose execution method
-    onclick_handler = (
-        f"runExerciseWithPyodide('{exercise_id}', {escaped_test_cases_json})"
-        if use_pyodide
-        else f"runExerciseSimple('{exercise_id}')"
-    )
-
-    # Add Pyodide script if needed
-    pyodide_script = ""
     if use_pyodide:
+        onclick_handler = f"runExerciseWithPyodide('{exercise_id}', {test_cases_json})"
         pyodide_script = """
 <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 <script src="/assets/js/pyodide-exercise.js"></script>
 """
+    else:
+        onclick_handler = f"runExerciseSimple('{exercise_id}')"
+        pyodide_script = ""
 
     return f"""
 {pyodide_script}

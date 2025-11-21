@@ -12,16 +12,16 @@ student solutions across all course modules, including:
 - Architecture compliance checking
 """
 
-import os
-import sys
 import ast
 import importlib.util
-from typing import Dict, List, Any, Optional, Callable
-from datetime import datetime
-from dataclasses import dataclass, field
-from enum import Enum
 import inspect
-
+import os
+import sys
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # =============================================================================
 # TEST FRAMEWORK CORE
@@ -47,9 +47,9 @@ class TestCase:
     module: str
     points: int = 1
     timeout: int = 30
-    required_patterns: List[str] = field(default_factory=list)
-    required_classes: List[str] = field(default_factory=list)
-    required_methods: List[str] = field(default_factory=list)
+    required_patterns: list[str] = field(default_factory=list)
+    required_classes: list[str] = field(default_factory=list)
+    required_methods: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -69,7 +69,7 @@ class ModuleTestSuite:
     """Test suite for a complete module"""
 
     module_name: str
-    test_cases: List[TestCase] = field(default_factory=list)
+    test_cases: list[TestCase] = field(default_factory=list)
     max_points: int = 0
 
     def __post_init__(self):
@@ -101,7 +101,7 @@ class CodeAnalyzer:
     """
 
     @staticmethod
-    def parse_code(code_content: str) -> Optional[ast.AST]:
+    def parse_code(code_content: str) -> ast.AST | None:
         """
         Parse Python code into AST (Abstract Syntax Tree).
 
@@ -135,7 +135,7 @@ class CodeAnalyzer:
             return None
 
     @staticmethod
-    def find_classes(tree: ast.AST) -> List[str]:
+    def find_classes(tree: ast.AST) -> list[str]:
         """Find all class names in AST"""
 
         class ClassVisitor(ast.NodeVisitor):
@@ -151,7 +151,7 @@ class CodeAnalyzer:
         return visitor.classes
 
     @staticmethod
-    def find_methods(tree: ast.AST, class_name: Optional[str] = None) -> List[str]:
+    def find_methods(tree: ast.AST, class_name: str | None = None) -> list[str]:
         """Find all method names, optionally within a specific class"""
 
         class MethodVisitor(ast.NodeVisitor):
@@ -176,7 +176,7 @@ class CodeAnalyzer:
         return visitor.methods
 
     @staticmethod
-    def find_design_patterns(tree: ast.AST) -> Dict[str, bool]:
+    def find_design_patterns(tree: ast.AST) -> dict[str, bool]:
         """Detect design patterns in code"""
         patterns = {
             "singleton": False,
@@ -267,6 +267,136 @@ class CodeAnalyzer:
 
         return patterns
 
+    @staticmethod
+    def check_tdd_compliance(code: str) -> dict[str, Any]:
+        """
+        Check if code follows TDD principles.
+
+        💡 Простыми словами: Проверяет, следует ли ваш код принципам TDD:
+        - Есть ли тесты в коде
+        - Написаны ли тесты перед реализацией
+        - Правильно ли организована структура тестов
+
+        Args:
+            code: Python code string to analyze
+
+        Returns:
+            Dictionary with TDD compliance information:
+            - has_tests: bool - whether code contains test functions
+            - test_count: int - number of test functions
+            - implementation_count: int - number of implementation functions
+            - tdd_compliant: bool - overall TDD compliance
+            - test_functions: List[str] - names of test functions
+            - implementation_functions: List[str] - names of implementation functions
+            - recommendations: List[str] - recommendations for improvement
+
+        Example:
+            >>> code = '''
+            ... def test_add():
+            ...     assert add(2, 3) == 5
+            ...
+            ... def add(a, b):
+            ...     return a + b
+            ... '''
+            >>> result = CodeAnalyzer.check_tdd_compliance(code)
+            >>> print(result['tdd_compliant'])
+            True
+        """
+        tree = CodeAnalyzer.parse_code(code)
+        if tree is None:
+            return {
+                "has_tests": False,
+                "test_count": 0,
+                "implementation_count": 0,
+                "tdd_compliant": False,
+                "test_functions": [],
+                "implementation_functions": [],
+                "recommendations": ["Fix syntax errors in your code first"],
+            }
+
+        class TDDVisitor(ast.NodeVisitor):
+            def __init__(self):
+                self.test_functions = []
+                self.implementation_functions = []
+                self.function_order = []  # Track order of functions
+
+            def visit_FunctionDef(self, node):
+                func_name = node.name
+                self.function_order.append(func_name)
+
+                # Check if function is a test
+                if func_name.startswith("test_") or "test" in func_name.lower():
+                    self.test_functions.append(func_name)
+                else:
+                    # Check if it's not a test helper function
+                    if not func_name.startswith("_"):
+                        self.implementation_functions.append(func_name)
+
+                self.generic_visit(node)
+
+        visitor = TDDVisitor()
+        visitor.visit(tree)
+
+        has_tests = len(visitor.test_functions) > 0
+        test_count = len(visitor.test_functions)
+        implementation_count = len(visitor.implementation_functions)
+
+        # Check if tests come before implementation (TDD principle)
+        tests_before_implementation = True
+        if visitor.test_functions and visitor.implementation_functions:
+            first_test_idx = min(
+                visitor.function_order.index(f)
+                for f in visitor.test_functions
+                if f in visitor.function_order
+            )
+            first_impl_idx = min(
+                visitor.function_order.index(f)
+                for f in visitor.implementation_functions
+                if f in visitor.function_order
+            )
+            tests_before_implementation = first_test_idx < first_impl_idx
+
+        # Generate recommendations
+        recommendations = []
+        if not has_tests:
+            recommendations.append(
+                "❌ No test functions found. TDD requires writing tests first!"
+            )
+            recommendations.append(
+                "💡 Start with a test function like: def test_your_function():"
+            )
+        elif test_count < implementation_count:
+            recommendations.append(
+                f"⚠️ You have {test_count} test(s) but {implementation_count} implementation(s)"
+            )
+            recommendations.append(
+                "💡 Consider adding more tests to cover all functionality"
+            )
+        elif not tests_before_implementation:
+            recommendations.append(
+                "⚠️ Implementation functions appear before test functions"
+            )
+            recommendations.append(
+                "💡 In TDD, tests should be written before implementation"
+            )
+        else:
+            recommendations.append(
+                "✅ Good TDD structure! Tests are written before implementation"
+            )
+
+        tdd_compliant = has_tests and test_count > 0 and tests_before_implementation
+
+        return {
+            "has_tests": has_tests,
+            "test_count": test_count,
+            "implementation_count": implementation_count,
+            "tdd_compliant": tdd_compliant,
+            "test_functions": visitor.test_functions,
+            "implementation_functions": visitor.implementation_functions,
+            "tests_before_implementation": tests_before_implementation,
+            "recommendations": recommendations,
+        }
+
 
 class SolutionImporter:
     """Utility for safely importing student solutions"""
@@ -301,7 +431,7 @@ class SOLIDTestSuite:
     """Test suite for SOLID principles module"""
 
     @staticmethod
-    def create_srp_tests() -> List[TestCase]:
+    def create_srp_tests() -> list[TestCase]:
         """Create tests for Single Responsibility Principle"""
 
         def test_user_validator_exists(solution):
@@ -403,7 +533,7 @@ class DesignPatternsTestSuite:
     """Test suite for Design Patterns module"""
 
     @staticmethod
-    def create_pattern_tests() -> List[TestCase]:
+    def create_pattern_tests() -> list[TestCase]:
         """Create tests for design patterns"""
 
         def test_strategy_pattern(solution):
@@ -544,7 +674,7 @@ class ArchitectureTestSuite:
     """Test suite for Architecture module"""
 
     @staticmethod
-    def create_architecture_tests() -> List[TestCase]:
+    def create_architecture_tests() -> list[TestCase]:
         """Create tests for architecture patterns"""
 
         def test_repository_pattern(solution):
@@ -675,7 +805,7 @@ class DDDTestSuite:
     """Test suite for Domain-Driven Design module"""
 
     @staticmethod
-    def create_ddd_tests() -> List[TestCase]:
+    def create_ddd_tests() -> list[TestCase]:
         """Create tests for DDD implementation"""
 
         def test_bounded_contexts(solution):
@@ -848,7 +978,7 @@ class ProjectTestSuite:
     """Test suite for complete project implementation"""
 
     @staticmethod
-    def create_project_tests() -> List[TestCase]:
+    def create_project_tests() -> list[TestCase]:
         """Create tests for complete project"""
 
         def test_solid_principles_applied(solution):
@@ -926,7 +1056,7 @@ class ProjectTestSuite:
             # Try AST-based analysis if solution module has __file__ attribute
             if hasattr(solution, "__file__") and solution.__file__:
                 try:
-                    with open(solution.__file__, "r", encoding="utf-8") as f:
+                    with open(solution.__file__, encoding="utf-8") as f:
                         source_code = f.read()
                     tree = ast.parse(source_code)
                     # Check for async function definitions
@@ -1098,7 +1228,7 @@ class TestRunner:
     """Main test execution engine"""
 
     def __init__(self):
-        self.results: List[TestExecutionResult] = []
+        self.results: list[TestExecutionResult] = []
 
     def run_test_case(
         self, test_case: TestCase, solution_module
@@ -1143,7 +1273,7 @@ class TestRunner:
 
     def run_test_suite(
         self, test_suite: ModuleTestSuite, solution_file_path: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run complete test suite"""
         print(f"\n🧪 Running {test_suite.module_name} Test Suite")
         print("=" * 50)
@@ -1159,7 +1289,7 @@ class TestRunner:
             }
 
         # Analyze code structure
-        with open(solution_file_path, "r") as f:
+        with open(solution_file_path) as f:
             code_content = f.read()
 
         tree = CodeAnalyzer.parse_code(code_content)
@@ -1244,7 +1374,7 @@ class AutomatedTester:
         self.test_runner = TestRunner()
         self.test_suites = self._initialize_test_suites()
 
-    def _initialize_test_suites(self) -> Dict[str, ModuleTestSuite]:
+    def _initialize_test_suites(self) -> dict[str, ModuleTestSuite]:
         """Initialize all test suites"""
         return {
             "solid-srp": ModuleTestSuite(
@@ -1270,8 +1400,8 @@ class AutomatedTester:
         }
 
     def test_solution(
-        self, solution_file: str, test_suite_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, solution_file: str, test_suite_name: str | None = None
+    ) -> dict[str, Any]:
         """
         Test a solution file against test suites.
 
@@ -1347,7 +1477,7 @@ class AutomatedTester:
 
         return results
 
-    def generate_report(self, test_results: Dict[str, Any]) -> str:
+    def generate_report(self, test_results: dict[str, Any]) -> str:
         """Generate detailed test report"""
         report = []
         report.append("📋 AUTOMATED TESTING REPORT")

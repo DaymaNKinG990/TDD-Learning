@@ -17,9 +17,18 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.12
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
       - name: Install dependencies
         run: uv sync
@@ -31,7 +40,8 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Run mypy
-        run: uv run mypy . --ignore-missing-imports        continue-on-error: true
+        run: uv run mypy .
+        continue-on-error: true
 
   test:
     name: Run Tests
@@ -43,16 +53,41 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.12
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: uv sync
 
-      - name: Run pytest
-        run: uv run pytest
-        continue-on-error: true
+      - name: Run pytest with coverage
+        run: |
+          uv run pytest --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing || true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
 
   build-docs:
     name: Build Documentation
@@ -64,9 +99,18 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.12
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-docs-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-docs-
 
       - name: Install dependencies
         run: uv sync --extra docs
@@ -75,11 +119,14 @@ jobs:
         run: uv run mkdocs build
 
       - name: Check for broken links
-        run: |
-          if command -v linkchecker &> /dev/null; then
-            linkchecker site/index.html
-          else
-            echo "linkchecker not installed, skipping link check"
-          fi
+        uses: peter-evans/link-checker@v1
+        with:
+          args: --recursive --check-external site/
         continue-on-error: true
 
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: site/
+          retention-days: 7

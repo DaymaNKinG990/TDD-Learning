@@ -1,11 +1,11 @@
 {
-    "name": "TDD Learning - Полный курс по Test-Driven Development",
-    "short_name": "TDD Learning",
-    "description": "Детальный курс по Test-Driven Development с примерами на Python",
+    "name": "Мастерство архитектуры и паттернов проектирования",
+    "short_name": "Архитектура & Паттерны",
+    "description": "Полный курс по SOLID принципам, паттернам проектирования, архитектуре ПО и Domain-Driven Design",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#22c55e",
+    "background_color": "#1e40af",
+    "theme_color": "#3b82f6",
     "icons": [
         {
             "src": "/assets/favicon-16x16.png",
